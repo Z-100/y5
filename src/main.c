@@ -13,7 +13,7 @@ int main() {
 
     GLFWwindow* mainWindow = glfwCreateWindow(800, 600, "y5", nullptr, nullptr);
 
-    if (mainWindow == NULL) {
+    if (mainWindow == nullptr) {
         printf("Error creating window");
         glfwTerminate();
         return -1;
