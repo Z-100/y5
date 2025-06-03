@@ -5,7 +5,7 @@
 
 char* readLines(const char* filePath) {
 
-    FILE *filePtr = fopen(filePath, "r");
+    FILE* filePtr = fopen(filePath, "r");
 
     if (!filePtr) {
         perror(strcat("File not found: ", filePath));
@@ -24,10 +24,9 @@ char* readLines(const char* filePath) {
     }
 
     const size_t bytesRead = fread(fileContentBuffer, 1, fileLength, filePtr);
-    fclose(filePtr);
+    fileContentBuffer[fileLength > bytesRead ? bytesRead : fileLength] = '\0';
 
-    if (fileLength > bytesRead) fileContentBuffer[bytesRead] = '\0';
-    else fileContentBuffer[fileLength] = '\0';
+    fclose(filePtr);
 
     return fileContentBuffer;
 }
