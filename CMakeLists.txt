@@ -13,12 +13,12 @@ target_include_directories(glad PUBLIC lib/glad/include)
 # OpenGL
 find_package(OpenGL REQUIRED)
 
-# Link assets
-file(GLOB ASSETS "assets/*")
+# Link sources/resources
+file(GLOB RESOURCES "res/*")
 file(GLOB SRC_FILES "src/*.c")
 
 include_directories(include)
-file(COPY ${ASSETS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/assets)
+file(COPY ${RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/res)
 
 # Executables
 add_executable(y5 ${SRC_FILES})

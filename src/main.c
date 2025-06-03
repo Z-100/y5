@@ -1,9 +1,15 @@
 #include <stdio.h>
+#include <string.h>
+#include <wchar.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "shader_loader.h"
+
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+void doShadyStuff();
 
 float screenColors[] = {0, 1, 0};
 
@@ -43,6 +49,8 @@ int main() {
 
         processInput(mainWindow);
 
+        doShadyStuff();
+
         glfwPollEvents();
         glfwSwapBuffers(mainWindow);
     }
@@ -65,4 +73,26 @@ void processInput(GLFWwindow* window) {
         screenColors[1] -= 0.05f;
         screenColors[2] += 0.05f;
     }
+}
+
+void doShadyStuff() {
+
+    float vertices[] = {
+        -0.5f,  -0.5f,  0,
+        0,      -0.5f,  0,
+        0,       0.5f,  0,
+    };
+
+    unsigned int vertexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    char* shaderPtr = loadShader("res/shaders/VertexShader.glsl");
+
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &shaderPtr, nullptr);
+    glCompileShader(vertexShader);
+
+    free(shaderPtr);
 }
