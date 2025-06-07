@@ -1,4 +1,5 @@
 #include "file_reader.h"
+#include "mesh_generator.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -17,7 +18,12 @@ void process_inputs(GLFWwindow* window);
 unsigned int compile_glsl_shader(const char* shaderName, unsigned int shaderType);
 unsigned int build_shader_program();
 
-void bind_vbo_vao_ebo(unsigned int* vertexBuffer, unsigned int* vertexArray, unsigned int* elementBuffer);
+void bind_vbo_vao_ebo(
+	unsigned int* vertexBuffer,
+	unsigned int* vertexArray,
+	unsigned int* elementBuffer,
+	unsigned int* trianglesSize
+);
 
 int main() {
 
@@ -46,10 +52,10 @@ int main() {
 
 	unsigned int vertexBuffer, // VBO
 		vertexArray,		   // VAO
-		elementBuffer		   // EBO
-		;
+		elementBuffer,		   // EBO
+		trianglesSize;
 
-	bind_vbo_vao_ebo(&vertexBuffer, &vertexArray, &elementBuffer);
+	bind_vbo_vao_ebo(&vertexBuffer, &vertexArray, &elementBuffer, &trianglesSize);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(mainWindow)) {
@@ -63,7 +69,7 @@ int main() {
 		glUseProgram(shaderProgram);
 
 		glBindVertexArray(vertexArray);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, trianglesSize, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(mainWindow);
@@ -97,8 +103,11 @@ void process_inputs(GLFWwindow* window) {
 
 unsigned int build_shader_program() {
 
-	unsigned int vertexShader	= compile_glsl_shader("res/shaders/VertexShader.glsl", GL_VERTEX_SHADER);
-	unsigned int fragmentShader = compile_glsl_shader("res/shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
+	unsigned int vertexShader =
+		compile_glsl_shader("res/shaders/VertexShader.glsl", GL_VERTEX_SHADER);
+
+	unsigned int fragmentShader =
+		compile_glsl_shader("res/shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
 
 	if (vertexShader == 0 || fragmentShader == 0)
 		printf("Error compiling shaders, exiting...\n");
@@ -123,22 +132,18 @@ unsigned int build_shader_program() {
 	return shaderProgram;
 }
 
-void bind_vbo_vao_ebo(unsigned int* vertexBuffer, unsigned int* vertexArray, unsigned int* elementBuffer) {
+void bind_vbo_vao_ebo(
+	unsigned int* vertexBuffer,
+	unsigned int* vertexArray,
+	unsigned int* elementBuffer,
+	unsigned int* trianglesSize
+) {
 
-	// clang-format off
-	float vertices[] = {
-		0.5f,  0.5f, 0.0f,  // top right
-		0.5f, -0.5f, 0.0f,  // bottom right
-	   -0.5f, -0.5f, 0.0f,  // bottom left
-	   -0.5f,  0.5f, 0.0f   // top left
-	};
+	struct FloatArray* verticesData = generate_vertices(-1.0f, 1.0f, -1.0f, 1.0f);
+	struct IntArray*   indicesData	= generate_indices(0, 0);
 
-	unsigned int indices[] = {
-		0, 1, 3,
-		// 1, 2, 3,
-		3,2,1
-	};
-	// clang-format on
+	unsigned long long verticesDataSize = verticesData->length * sizeof(float);
+	unsigned long long indicesDataSize	= indicesData->length * sizeof(unsigned int);
 
 	glGenVertexArrays(1, vertexArray);
 	glGenBuffers(1, vertexBuffer);
@@ -148,15 +153,19 @@ void bind_vbo_vao_ebo(unsigned int* vertexBuffer, unsigned int* vertexArray, uns
 
 	// Bind VBO
 	glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, verticesDataSize, verticesData->data, GL_STATIC_DRAW);
 
 	// Bind EBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *elementBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesDataSize, indicesData->data, GL_STATIC_DRAW);
 
 	// Define vertices structure
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+	int triangle_definition_size = 3;
+	glVertexAttribPointer(
+		0, 3, GL_FLOAT, GL_FALSE, triangle_definition_size * sizeof(float), nullptr
+	);
 	glEnableVertexAttribArray(0);
+	*trianglesSize = indicesData->length;
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
