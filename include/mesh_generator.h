@@ -3,8 +3,8 @@
 
 #include "types.h"
 
-struct FloatArray* generate_vertices(float minX, float maxX, float minY, float maxY);
+struct FloatArray* generate_vertices(unsigned int x_rowlength, unsigned int y_rowlength);
 
-struct IntArray* generate_indices(int rowLength, int columnLength);
+struct IntArray* generate_indices(int width, int height);
 
 #endif

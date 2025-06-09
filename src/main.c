@@ -139,8 +139,8 @@ void bind_vbo_vao_ebo(
 	unsigned int* trianglesSize
 ) {
 
-	struct FloatArray* verticesData = generate_vertices(-1.0f, 1.0f, -1.0f, 1.0f);
-	struct IntArray*   indicesData	= generate_indices(0, 0);
+	struct FloatArray* verticesData = generate_vertices(10, 10);
+	struct IntArray*   indicesData	= generate_indices(10, 10);
 
 	unsigned long long verticesDataSize = verticesData->length * sizeof(float);
 	unsigned long long indicesDataSize	= indicesData->length * sizeof(unsigned int);
@@ -160,10 +160,7 @@ void bind_vbo_vao_ebo(
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesDataSize, indicesData->data, GL_STATIC_DRAW);
 
 	// Define vertices structure
-	int triangle_definition_size = 3;
-	glVertexAttribPointer(
-		0, 3, GL_FLOAT, GL_FALSE, triangle_definition_size * sizeof(float), nullptr
-	);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
 	*trianglesSize = indicesData->length;
 

@@ -3,28 +3,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct FloatArray* generate_vertices(float minX, float maxX, float minY, float maxY) {
+struct FloatArray* generate_vertices(unsigned int x_rowlength, unsigned int y_rowlength) {
 
-	// clang-format off
-	float vertices[] = {
-		0.5f,  0.5f,  0.0f, // Half right top
-		0.5f,  -0.5f, 0.0f, // Half right bottom
-		-0.5f, -0.5f, 0.0f, // Half left bottom
-		-0.5f, 0.5f,  0.0f, // Half left top
+	if (x_rowlength == 0 || y_rowlength == 0) {
+		perror("Cannot create 0 vertices");
+		return nullptr;
+	}
 
-		0.0f,  0.0f,  0.0f, // Middle
-		0.0f,  -1.0f, 0.0f, // Bottom
-		0.0f,  1.0f,  0.0f, // Top
+	unsigned int totalVertices	  = x_rowlength * y_rowlength;
+	unsigned int totalCoordinates = totalVertices * 3;
 
-		-1.0f, 0.0f,  0.0f, // Left Middle
-		-1.0f, -1.0f, 0.0f, // Left Bottom
-		-1.0f, 1.0f,  0.0f, // Left Top
+	float vertices[totalCoordinates];
 
-		1.0f,  0.0f,  0.0f, // Right Middle
-		1.0f,  -1.0f, 0.0f, // Right Bottom
-		1.0f,  1.0f,  0.0f, // Right Top
-	};
-	// clang-format on
+	float y_ceil = (float) y_rowlength;
+	float x_ceil = (float) x_rowlength;
+
+	float y_normalizer = 1.f / y_ceil;
+	float x_normalizer = 1.f / x_ceil;
+
+	int coordinateIndex = 0;
+	for (int y = 0; y < y_rowlength; y++) {
+
+		float y_normalized = ((float) y - y_ceil / 2) * y_normalizer * 2;
+
+		for (int x = 0; x < x_rowlength; x++) {
+
+			float x_normalized = ((float) x - x_ceil / 2) * x_normalizer * 2;
+
+			vertices[coordinateIndex + 0] = x_normalized;
+			vertices[coordinateIndex + 1] = y_normalized;
+			vertices[coordinateIndex + 2] = 0;
+
+			coordinateIndex += 3;
+		}
+	}
 
 	struct FloatArray* verticesData = malloc(sizeof(struct FloatArray));
 	if (verticesData == nullptr)
@@ -42,18 +54,25 @@ struct FloatArray* generate_vertices(float minX, float maxX, float minY, float m
 	return verticesData;
 }
 
-struct IntArray* generate_indices(int rowLength, int columnLength) {
+struct IntArray* generate_indices(int width, int height) {
 
-	// clang-format off
-	unsigned int indices[] = {
-		0, 1, 3,
-		1, 2, 3,
-		3, 2, 1,
-		0, 12, 11,
-		9, 8, 5,
-		0, 1, 2,
-	};
-	// clang-format on
+	unsigned int totalIndices = (width - 1) * (height - 1) * 3;
+	unsigned int indices[totalIndices];
+
+	int indicesIndex = 0;
+	for (int y = 0; y < height - 1; y++) {
+		for (int x = 0; x < width - 1; x++) {
+
+			unsigned int i = y * width + x;
+
+			// Let's do half-quads only
+			indices[indicesIndex + 0] = i + width + 1;
+			indices[indicesIndex + 1] = i + width;
+			indices[indicesIndex + 2] = i;
+
+			indicesIndex += 3;
+		}
+	}
 
 	struct IntArray* indicesData = malloc(sizeof(struct IntArray));
 	if (indicesData == nullptr)
