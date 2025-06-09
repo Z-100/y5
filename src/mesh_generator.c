@@ -103,3 +103,49 @@ struct IntArray* generate_indices(unsigned int width, unsigned int height) {
 
 	return indicesData;
 }
+
+struct IntArray* generate_indices2(unsigned int width, unsigned int height) {
+
+	if (width == 0 || height == 0) {
+		perror("Cannot create 0 indices");
+		return nullptr;
+	}
+
+	unsigned int indicesLength = (width - 1) * (height - 1) * 3;
+	unsigned int indices[indicesLength];
+
+	int indicesIndex = 0;
+	for (int y = 0; y < height - 1; y++) {
+		for (int x = 0; x < width - 1; x++) {
+
+			unsigned int i = y * width + x;
+
+			// Let's do half-quads only
+			indices[indicesIndex + 0] = i + width + 1;
+			indices[indicesIndex + 1] = i + 1;
+			indices[indicesIndex + 2] = i;
+
+			indicesIndex += 3;
+		}
+	}
+
+	struct IntArray* indicesData = malloc(sizeof(struct IntArray));
+	if (indicesData == nullptr) {
+		perror("Failed to allocate memory for indices array");
+		return nullptr;
+	}
+
+	unsigned long long indicesDataSize = indicesLength * sizeof(unsigned int);
+
+	indicesData->data = malloc(indicesDataSize);
+	if (indicesData->data == nullptr) {
+		perror("Failed to allocate memory for indices data");
+		free(indicesData);
+		return nullptr;
+	}
+
+	memcpy(indicesData->data, indices, indicesDataSize);
+	indicesData->length = indicesLength;
+
+	return indicesData;
+}

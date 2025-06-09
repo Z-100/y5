@@ -16,13 +16,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void process_inputs(GLFWwindow* window);
 
 unsigned int compile_glsl_shader(const char* shaderName, unsigned int shaderType);
-unsigned int build_shader_program();
+unsigned int build_shader_program(bool useFirstShader);
 
 void bind_vbo_vao_ebo(
 	unsigned int* vertexBuffer,
 	unsigned int* vertexArray,
 	unsigned int* elementBuffer,
-	unsigned int* trianglesSize
+	unsigned int* trianglesSize,
+	bool useFirstIndices
 );
 
 int main() {
@@ -48,14 +49,21 @@ int main() {
 		return -1;
 	}
 
-	unsigned int shaderProgram = build_shader_program();
+	unsigned int shaderProgram = build_shader_program(true);
+	unsigned int shaderProgram2 = build_shader_program(false);
 
 	unsigned int vertexBuffer, // VBO
 		vertexArray,		   // VAO
 		elementBuffer,		   // EBO
 		trianglesSize;
 
-	bind_vbo_vao_ebo(&vertexBuffer, &vertexArray, &elementBuffer, &trianglesSize);
+	unsigned int vertexBuffer2, // VBO
+	vertexArray2,		   // VAO
+	elementBuffer2,		   // EBO
+	trianglesSize2;
+
+	bind_vbo_vao_ebo(&vertexBuffer, &vertexArray, &elementBuffer, &trianglesSize, true);
+	bind_vbo_vao_ebo(&vertexBuffer2, &vertexArray2, &elementBuffer2, &trianglesSize2, false);
 
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(mainWindow)) {
@@ -70,6 +78,12 @@ int main() {
 
 		glBindVertexArray(vertexArray);
 		glDrawElements(GL_TRIANGLES, trianglesSize, GL_UNSIGNED_INT, nullptr);
+		glBindVertexArray(0);
+
+		glUseProgram(shaderProgram2);
+
+		glBindVertexArray(vertexArray2);
+		glDrawElements(GL_TRIANGLES, trianglesSize2, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(mainWindow);
@@ -101,13 +115,13 @@ void process_inputs(GLFWwindow* window) {
 	}
 }
 
-unsigned int build_shader_program() {
+unsigned int build_shader_program(bool useFirstShader) {
 
 	unsigned int vertexShader =
 		compile_glsl_shader("res/shaders/VertexShader.glsl", GL_VERTEX_SHADER);
 
 	unsigned int fragmentShader =
-		compile_glsl_shader("res/shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
+		compile_glsl_shader(useFirstShader ? "res/shaders/fragment_shader_noise1.glsl" : "res/shaders/fragment_shader_noise2.glsl", GL_FRAGMENT_SHADER);
 
 	if (vertexShader == 0 || fragmentShader == 0)
 		printf("Error compiling shaders, exiting...\n");
@@ -136,11 +150,12 @@ void bind_vbo_vao_ebo(
 	unsigned int* vertexBuffer,
 	unsigned int* vertexArray,
 	unsigned int* elementBuffer,
-	unsigned int* trianglesSize
+	unsigned int* trianglesSize,
+	bool useFirstIndices
 ) {
 
 	struct FloatArray* verticesData = generate_vertices(10, 10);
-	struct IntArray*   indicesData	= generate_indices(10, 10);
+	struct IntArray*   indicesData	= useFirstIndices ? generate_indices(10, 10) : generate_indices2(10, 10);
 
 	unsigned long long verticesDataSize = verticesData->length * sizeof(float);
 	unsigned long long indicesDataSize	= indicesData->length * sizeof(unsigned int);
