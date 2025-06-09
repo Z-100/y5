@@ -23,7 +23,7 @@ void bind_vbo_vao_ebo(
 	unsigned int* vertexArray,
 	unsigned int* elementBuffer,
 	unsigned int* trianglesSize,
-	bool useFirstIndices
+	bool		  useFirstIndices
 );
 
 int main() {
@@ -49,7 +49,7 @@ int main() {
 		return -1;
 	}
 
-	unsigned int shaderProgram = build_shader_program(true);
+	unsigned int shaderProgram	= build_shader_program(true);
 	unsigned int shaderProgram2 = build_shader_program(false);
 
 	unsigned int vertexBuffer, // VBO
@@ -58,9 +58,9 @@ int main() {
 		trianglesSize;
 
 	unsigned int vertexBuffer2, // VBO
-	vertexArray2,		   // VAO
-	elementBuffer2,		   // EBO
-	trianglesSize2;
+		vertexArray2,			// VAO
+		elementBuffer2,			// EBO
+		trianglesSize2;
 
 	bind_vbo_vao_ebo(&vertexBuffer, &vertexArray, &elementBuffer, &trianglesSize, true);
 	bind_vbo_vao_ebo(&vertexBuffer2, &vertexArray2, &elementBuffer2, &trianglesSize2, false);
@@ -120,8 +120,11 @@ unsigned int build_shader_program(bool useFirstShader) {
 	unsigned int vertexShader =
 		compile_glsl_shader("res/shaders/VertexShader.glsl", GL_VERTEX_SHADER);
 
-	unsigned int fragmentShader =
-		compile_glsl_shader(useFirstShader ? "res/shaders/fragment_shader_noise1.glsl" : "res/shaders/fragment_shader_noise2.glsl", GL_FRAGMENT_SHADER);
+	unsigned int fragmentShader = compile_glsl_shader(
+		useFirstShader ? "res/shaders/fragment_shader_noise1.glsl"
+					   : "res/shaders/fragment_shader_noise2.glsl",
+		GL_FRAGMENT_SHADER
+	);
 
 	if (vertexShader == 0 || fragmentShader == 0)
 		printf("Error compiling shaders, exiting...\n");
@@ -151,11 +154,12 @@ void bind_vbo_vao_ebo(
 	unsigned int* vertexArray,
 	unsigned int* elementBuffer,
 	unsigned int* trianglesSize,
-	bool useFirstIndices
+	bool		  useFirstIndices
 ) {
 
 	struct FloatArray* verticesData = generate_vertices(10, 10);
-	struct IntArray*   indicesData	= useFirstIndices ? generate_indices(10, 10) : generate_indices2(10, 10);
+	struct IntArray*   indicesData =
+		  useFirstIndices ? generate_indices(10, 10) : generate_indices2(10, 10);
 
 	unsigned long long verticesDataSize = verticesData->length * sizeof(float);
 	unsigned long long indicesDataSize	= indicesData->length * sizeof(unsigned int);
@@ -188,7 +192,7 @@ unsigned int compile_glsl_shader(const char* shaderName, const unsigned int shad
 	char* shaderPtr = readLines(shaderName);
 
 	const unsigned int vertexShader = glCreateShader(shaderType);
-	glShaderSource(vertexShader, 1, &shaderPtr, nullptr);
+	glShaderSource(vertexShader, 1, (const GLchar**) &shaderPtr, nullptr);
 	glCompileShader(vertexShader);
 
 	free(shaderPtr);

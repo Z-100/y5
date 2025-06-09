@@ -1,7 +1,7 @@
 #include "mesh_generator.h"
+#include "types.h"
 
 #include <stdlib.h>
-#include <string.h>
 
 struct FloatArray* generate_vertices(unsigned int width, unsigned int height) {
 
@@ -37,25 +37,7 @@ struct FloatArray* generate_vertices(unsigned int width, unsigned int height) {
 		}
 	}
 
-	struct FloatArray* verticesData = malloc(sizeof(struct FloatArray));
-	if (verticesData == nullptr) {
-		perror("Failed to allocate memory for vertices array");
-		return nullptr;
-	}
-
-	unsigned long long verticesDataSize = verticesLength * sizeof(float);
-
-	verticesData->data = malloc(verticesDataSize);
-	if (verticesData->data == nullptr) {
-		perror("Failed to allocate memory for vertices data");
-		free(verticesData);
-		return nullptr;
-	}
-
-	memcpy(verticesData->data, vertices, verticesDataSize);
-	verticesData->length = verticesLength;
-
-	return verticesData;
+	return new_float_array(vertices, verticesLength);
 }
 
 struct IntArray* generate_indices(unsigned int width, unsigned int height) {
@@ -83,25 +65,7 @@ struct IntArray* generate_indices(unsigned int width, unsigned int height) {
 		}
 	}
 
-	struct IntArray* indicesData = malloc(sizeof(struct IntArray));
-	if (indicesData == nullptr) {
-		perror("Failed to allocate memory for indices array");
-		return nullptr;
-	}
-
-	unsigned long long indicesDataSize = indicesLength * sizeof(unsigned int);
-
-	indicesData->data = malloc(indicesDataSize);
-	if (indicesData->data == nullptr) {
-		perror("Failed to allocate memory for indices data");
-		free(indicesData);
-		return nullptr;
-	}
-
-	memcpy(indicesData->data, indices, indicesDataSize);
-	indicesData->length = indicesLength;
-
-	return indicesData;
+	return new_int_array(indices, indicesLength);
 }
 
 struct IntArray* generate_indices2(unsigned int width, unsigned int height) {
@@ -129,23 +93,5 @@ struct IntArray* generate_indices2(unsigned int width, unsigned int height) {
 		}
 	}
 
-	struct IntArray* indicesData = malloc(sizeof(struct IntArray));
-	if (indicesData == nullptr) {
-		perror("Failed to allocate memory for indices array");
-		return nullptr;
-	}
-
-	unsigned long long indicesDataSize = indicesLength * sizeof(unsigned int);
-
-	indicesData->data = malloc(indicesDataSize);
-	if (indicesData->data == nullptr) {
-		perror("Failed to allocate memory for indices data");
-		free(indicesData);
-		return nullptr;
-	}
-
-	memcpy(indicesData->data, indices, indicesDataSize);
-	indicesData->length = indicesLength;
-
-	return indicesData;
+	return new_int_array(indices, indicesLength);
 }
