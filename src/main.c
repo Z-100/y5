@@ -36,7 +36,7 @@ int main() {
 	GLFWwindow* mainWindow = glfwCreateWindow(WIDTH, HEIGHT, TITLE, nullptr, nullptr);
 
 	if (mainWindow == nullptr) {
-		printf("Error creating window");
+		fprintf(stderr, "Error creating window");
 		glfwTerminate();
 		return -1;
 	}
@@ -45,7 +45,7 @@ int main() {
 	glfwSetFramebufferSizeCallback(mainWindow, framebuffer_size_callback);
 
 	if (!gladLoadGLLoader(glfwGetProcAddress)) {
-		printf("Error loading GLAD");
+		fprintf(stderr, "Error loading GLAD");
 		return -1;
 	}
 
@@ -100,7 +100,7 @@ int main() {
 
 void framebuffer_size_callback(GLFWwindow* window, const int width, const int height) {
 	glViewport(0, 0, width, height);
-	printf("Framebuffer size: %dx%d\n", width, height);
+	fprintf(stdout, "Framebuffer size: (%d*%d)\n", width, height);
 }
 
 void process_inputs(GLFWwindow* window) {
@@ -126,8 +126,10 @@ unsigned int build_shader_program(bool useFirstShader) {
 		GL_FRAGMENT_SHADER
 	);
 
-	if (vertexShader == 0 || fragmentShader == 0)
-		printf("Error compiling shaders, exiting...\n");
+	if (vertexShader == 0 || fragmentShader == 0) {
+		fprintf(stderr, "Error compiling shaders\n");
+		return 0;
+	}
 
 	unsigned int shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
@@ -140,7 +142,7 @@ unsigned int build_shader_program(bool useFirstShader) {
 
 	if (!success) {
 		glGetShaderInfoLog(shaderProgram, 512, nullptr, infoLog);
-		printf("Error during shader linking: %s", infoLog);
+		fprintf(stderr, "Error linking shader: %s\n", infoLog);
 	}
 
 	glDeleteShader(vertexShader);
@@ -203,7 +205,7 @@ unsigned int compile_glsl_shader(const char* shaderName, const unsigned int shad
 
 	if (!success) {
 		glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-		printf("Error during shader compilation: %s", infoLog);
+		fprintf(stderr, "Error compiling shader: %s\nDetail: %s\n", shaderName, infoLog);
 		return 0;
 	}
 

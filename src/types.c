@@ -1,5 +1,6 @@
 #include "types.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -34,7 +35,7 @@ struct IntArray* new_int_array(int data[], unsigned int dataLength) {
 void fill_array_if_exists(const void* data, unsigned int dataLength, struct Array* dataPointer) {
 
 	if (dataPointer == NULL) {
-		perror("Failed to allocate memory for int array");
+		fprintf(stderr, "Array pointer cannot be null\n");
 		return;
 	}
 
@@ -42,7 +43,7 @@ void fill_array_if_exists(const void* data, unsigned int dataLength, struct Arra
 
 	dataPointer->data = malloc(intArrayDataSize);
 	if (dataPointer->data == NULL) {
-		perror("Failed to allocate memory for int array data");
+		fprintf(stderr, "Failed malloc for array data\n");
 		free(dataPointer);
 		return;
 	}

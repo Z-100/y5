@@ -1,12 +1,12 @@
 #include "mesh_generator.h"
 #include "types.h"
 
-#include <stdlib.h>
+#include <stdio.h>
 
 struct FloatArray* generate_vertices(unsigned int width, unsigned int height) {
 
-	if (width == 0 || height == 0) {
-		perror("Cannot create 0 vertices");
+	if (width <= 1 || height <= 1) {
+		fprintf(stderr, "Cannot create (w:%d/h:%d) vertices - min is (w:2/h:2)\n", width, height);
 		return nullptr;
 	}
 
@@ -42,8 +42,8 @@ struct FloatArray* generate_vertices(unsigned int width, unsigned int height) {
 
 struct IntArray* generate_indices(unsigned int width, unsigned int height) {
 
-	if (width == 0 || height == 0) {
-		perror("Cannot create 0 indices");
+	if (width <= 1 || height <= 1) {
+		fprintf(stderr, "Cannot create (w:%d/h:%d) indices - min is (w:2/h:2)\n", width, height);
 		return nullptr;
 	}
 
@@ -68,10 +68,11 @@ struct IntArray* generate_indices(unsigned int width, unsigned int height) {
 	return new_int_array(indices, indicesLength);
 }
 
+// TODO: Le delete :)
 struct IntArray* generate_indices2(unsigned int width, unsigned int height) {
 
 	if (width == 0 || height == 0) {
-		perror("Cannot create 0 indices");
+		fprintf(stderr, "Cannot create 0 indices");
 		return nullptr;
 	}
 
