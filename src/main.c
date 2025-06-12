@@ -1,5 +1,6 @@
-#include "file_reader.h"
 #include "mesh_generator.h"
+#include "shader_loader.h"
+#include "types.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -15,8 +16,7 @@ float screenColors[] = { 0, 1, 0 };
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void process_inputs(GLFWwindow* window);
 
-unsigned int compile_glsl_shader(const char* shaderName, unsigned int shaderType);
-unsigned int build_shader_program(bool useFirstShader);
+struct Array* provide_shaders(bool useFirst);
 
 void bind_vbo_vao_ebo(
 	unsigned int* vertexBuffer,
@@ -49,20 +49,24 @@ int main() {
 		return -1;
 	}
 
-	unsigned int shaderProgram	= build_shader_program(true);
-	unsigned int shaderProgram2 = build_shader_program(false);
+	struct Array* shadersArray1	 = provide_shaders(true);
+	unsigned int  shader_program = compile_shaders_to_shader_program(shadersArray1);
 
 	unsigned int vertexBuffer, // VBO
 		vertexArray,		   // VAO
 		elementBuffer,		   // EBO
 		trianglesSize;
 
+	bind_vbo_vao_ebo(&vertexBuffer, &vertexArray, &elementBuffer, &trianglesSize, true);
+
+	struct Array* shadersArray2	  = provide_shaders(false);
+	unsigned int  shader_program2 = compile_shaders_to_shader_program(shadersArray2);
+
 	unsigned int vertexBuffer2, // VBO
 		vertexArray2,			// VAO
 		elementBuffer2,			// EBO
 		trianglesSize2;
 
-	bind_vbo_vao_ebo(&vertexBuffer, &vertexArray, &elementBuffer, &trianglesSize, true);
 	bind_vbo_vao_ebo(&vertexBuffer2, &vertexArray2, &elementBuffer2, &trianglesSize2, false);
 
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -74,13 +78,14 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Triangle magic
-		glUseProgram(shaderProgram);
+		use_shader(&shader_program);
 
 		glBindVertexArray(vertexArray);
 		glDrawElements(GL_TRIANGLES, trianglesSize, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(0);
 
-		glUseProgram(shaderProgram2);
+		// Triangle magic 2
+		use_shader(&shader_program2);
 
 		glBindVertexArray(vertexArray2);
 		glDrawElements(GL_TRIANGLES, trianglesSize2, GL_UNSIGNED_INT, nullptr);
@@ -92,7 +97,9 @@ int main() {
 
 	glDeleteVertexArrays(1, &vertexArray);
 	glDeleteBuffers(1, &vertexBuffer);
-	glDeleteProgram(shaderProgram);
+
+	glDeleteProgram(shader_program);
+	glDeleteProgram(shader_program2);
 
 	glfwTerminate();
 	return 0;
@@ -115,40 +122,21 @@ void process_inputs(GLFWwindow* window) {
 	}
 }
 
-unsigned int build_shader_program(bool useFirstShader) {
+struct Array* provide_shaders(bool useFirst) {
 
-	unsigned int vertexShader =
-		compile_glsl_shader("res/shaders/VertexShader.glsl", GL_VERTEX_SHADER);
-
-	unsigned int fragmentShader = compile_glsl_shader(
-		useFirstShader ? "res/shaders/fragment_shader_noise1.glsl"
-					   : "res/shaders/fragment_shader_noise2.glsl",
-		GL_FRAGMENT_SHADER
-	);
-
-	if (vertexShader == 0 || fragmentShader == 0) {
-		fprintf(stderr, "Error compiling shaders\n");
-		return 0;
+	struct Shader* shadersPtr = malloc(sizeof(struct Shader) * 2);
+	if (!shadersPtr) {
+		fprintf(stderr, "Failed to allocate shader program memory\n");
+		return new_array(nullptr, 0);
 	}
 
-	unsigned int shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
+	shadersPtr[0].name = Y5_VERTEX_SHADER;
+	shadersPtr[0].type = GL_VERTEX_SHADER;
 
-	int	 success;
-	char infoLog[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	shadersPtr[1].name = useFirst ? Y5_FRAGMENT_SHADER_NOISE_1 : Y5_FRAGMENT_SHADER_NOISE_2;
+	shadersPtr[1].type = GL_FRAGMENT_SHADER;
 
-	if (!success) {
-		glGetShaderInfoLog(shaderProgram, 512, nullptr, infoLog);
-		fprintf(stderr, "Error linking shader: %s\n", infoLog);
-	}
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	return shaderProgram;
+	return new_array(shadersPtr, 2);
 }
 
 void bind_vbo_vao_ebo(
@@ -187,27 +175,4 @@ void bind_vbo_vao_ebo(
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-}
-
-unsigned int compile_glsl_shader(const char* shaderName, const unsigned int shaderType) {
-
-	char* shaderPtr = readLines(shaderName);
-
-	const unsigned int vertexShader = glCreateShader(shaderType);
-	glShaderSource(vertexShader, 1, (const GLchar**) &shaderPtr, nullptr);
-	glCompileShader(vertexShader);
-
-	free(shaderPtr);
-
-	int	 success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-		fprintf(stderr, "Error compiling shader: %s\nDetail: %s\n", shaderName, infoLog);
-		return 0;
-	}
-
-	return vertexShader;
 }

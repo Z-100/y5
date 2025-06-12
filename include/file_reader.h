@@ -1,6 +1,8 @@
-#ifndef SHADER_LOADER_H
-#define SHADER_LOADER_H
+#ifndef FILE_READER_H
+#define FILE_READER_H
 
-char* readLines(const char* filePath);
+char* read_lines_dir_name(const char* directory, const char* fileName);
+
+char* read_lines_path(const char* filePath);
 
 #endif

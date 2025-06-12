@@ -3,7 +3,22 @@
 #include <glad/glad.h>
 #include <stdio.h>
 
-char* readLines(const char* filePath) {
+char* read_lines_dir_name(const char* directory, const char* fileName) {
+
+	size_t fullPathLength = strlen(directory) + strlen(fileName) + 2;
+	char*  fullPath		  = malloc(fullPathLength);
+
+	if (!fullPath) {
+		fprintf(stderr, "Failed malloc for building '%s/%s'\n", directory, fileName);
+		return nullptr;
+	}
+
+	snprintf(fullPath, fullPathLength, "%s/%s", directory, fileName);
+
+	return read_lines_path(fullPath);
+}
+
+char* read_lines_path(const char* filePath) {
 
 	fprintf(stdout, "Start reading %s\n", filePath);
 

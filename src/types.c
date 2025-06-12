@@ -16,6 +16,11 @@ void free_int_array(struct IntArray* array) {
 	free(array);
 }
 
+void free_array(struct Array* array) {
+	free(array->data);
+	free(array);
+}
+
 struct FloatArray* new_float_array(float data[], unsigned int dataLength) {
 
 	struct FloatArray* floatArray = malloc(sizeof(struct FloatArray));
@@ -30,6 +35,16 @@ struct IntArray* new_int_array(int data[], unsigned int dataLength) {
 	fill_array_if_exists(data, dataLength, (struct Array*) intArray);
 
 	return intArray;
+}
+
+struct Array* new_array(void* data, unsigned int dataLength) {
+
+	struct Array* arrayPtr = malloc(sizeof(struct Array));
+
+	arrayPtr->data	 = data;
+	arrayPtr->length = dataLength;
+
+	return arrayPtr;
 }
 
 void fill_array_if_exists(const void* data, unsigned int dataLength, struct Array* dataPointer) {
