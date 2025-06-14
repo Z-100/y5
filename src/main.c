@@ -130,10 +130,10 @@ struct Array* provide_shaders(bool useFirst) {
 		return new_array(nullptr, 0);
 	}
 
-	shadersPtr[0].name = Y5_VERTEX_SHADER;
+	shadersPtr[0].name = VERTEX_SHADER;
 	shadersPtr[0].type = GL_VERTEX_SHADER;
 
-	shadersPtr[1].name = useFirst ? Y5_FRAGMENT_SHADER_NOISE_1 : Y5_FRAGMENT_SHADER_NOISE_2;
+	shadersPtr[1].name = useFirst ? FRAGMENT_SHADER_NOISE_1 : FRAGMENT_SHADER_NOISE_2;
 	shadersPtr[1].type = GL_FRAGMENT_SHADER;
 
 	return new_array(shadersPtr, 2);

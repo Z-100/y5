@@ -3,9 +3,9 @@
 
 #include "types.h"
 
-static const char* Y5_VERTEX_SHADER			  = "vertex_shader.glsl";
-static const char* Y5_FRAGMENT_SHADER_NOISE_1 = "fragment_shader_noise1.glsl";
-static const char* Y5_FRAGMENT_SHADER_NOISE_2 = "fragment_shader_noise2.glsl";
+static const char* VERTEX_SHADER		   = "vertex_shader.glsl";
+static const char* FRAGMENT_SHADER_NOISE_1 = "fragment_shader_noise1.glsl";
+static const char* FRAGMENT_SHADER_NOISE_2 = "fragment_shader_noise2.glsl";
 
 unsigned int compile_shaders_to_shader_program(struct Array* shadersArray);
 
