@@ -9,7 +9,15 @@ static const char* FRAGMENT_SHADER_NOISE_2 = "fragment_shader_noise2.glsl";
 
 unsigned int compile_shaders_to_shader_program(struct Array* shadersArray);
 
+// ====================
+// Direct shader access
+// ====================
+
 void use_shader(const unsigned int* shaderPtr);
+
+// ==============================================
+// Pure declarations - impl by cool ass macros :)
+// ==============================================
 
 int set_uniform_bool(const unsigned int* shaderPtr, const char* name, int value);
 int set_uniform_int(const unsigned int* shaderPtr, const char* name, int value);

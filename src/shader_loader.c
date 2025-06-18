@@ -107,24 +107,24 @@ unsigned int build_shader_program(struct Shader* shaders, unsigned int shadersLe
 // Direct shader access
 // ====================
 
+void use_shader(const unsigned int* shaderPtr) {
+	glUseProgram(*shaderPtr);
+}
+
+// ======================================================
+// Macros for cheap method overloading? idk but they cool
+// ======================================================
+
 #define SET_UNIFORM_BASE(C_TYPE, GL_UNIFORM_FUN, GL_TYPE) \
 	int set_uniform_##C_TYPE(const unsigned int* shaderPtr, const char* name, GL_TYPE value) { \
-\
 		int locationInShader = glGetUniformLocation(*shaderPtr, name); \
-\
 		if (locationInShader == -1) { \
 			fprintf(stderr, "Uniform '%s' not found in shader:%d\n", name, *shaderPtr); \
 			return -1; \
 		} \
-\
 		GL_UNIFORM_FUN(locationInShader, value); \
 		return 0; \
 	}
-
-SET_UNIFORM_BASE(bool, glUniform1i, int)
-SET_UNIFORM_BASE(int, glUniform1i, int)
-SET_UNIFORM_BASE(float, glUniform1f, float)
-SET_UNIFORM_BASE(double, glUniform1d, double)
 
 #define SET_UNIFORM_VEC(C_TYPE, GL_UNIFORM_FUN, VALUE_TYPE, VEC_LEN) \
 	int set_uniform_##C_TYPE(const unsigned int* shaderPtr, const char* name, VALUE_TYPE* value) { \
@@ -133,19 +133,24 @@ SET_UNIFORM_BASE(double, glUniform1d, double)
 			fprintf(stderr, "Uniform '%s' not found in shader:%d\n", name, *shaderPtr); \
 			return -1; \
 		} \
+		/* clang-format off */ \
 		GL_UNIFORM_FUN( \
 			locationInShader, \
+			/* OpenGL doesn't care abt source vec4 if target is vec2. */ \
+			/* Maybe I'll run into problems in the future tho, who knows */ \
 			VEC_LEN >= 1 ? value[0] : 0.0f, \
 			VEC_LEN >= 2 ? value[1] : 0.0f, \
 			VEC_LEN >= 3 ? value[2] : 0.0f, \
 			VEC_LEN >= 4 ? value[2] : 0.0f \
 		); \
+		/* clang-format on */ \
 		return 0; \
 	}
 
+SET_UNIFORM_BASE(bool, glUniform1i, int)
+SET_UNIFORM_BASE(int, glUniform1i, int)
+SET_UNIFORM_BASE(float, glUniform1f, float)
+SET_UNIFORM_BASE(double, glUniform1d, double)
+
 SET_UNIFORM_VEC(vec4, glUniform4f, float, 4)
 SET_UNIFORM_VEC(vec3, glUniform4f, float, 3)
-
-void use_shader(const unsigned int* shaderPtr) {
-	glUseProgram(*shaderPtr);
-}

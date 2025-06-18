@@ -8,5 +8,5 @@ out vec2 pos;
 
 void main() {
     pos = aPos.xy;
-    gl_Position = vec4(aPos.x + u_positionMultiplier, -aPos.y, aPos.z, 1.0);
+    gl_Position = vec4(aPos.x + u_positionMultiplier, -aPos.y - u_positionMultiplier, aPos.z, 1.0);
 }
