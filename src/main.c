@@ -2,6 +2,7 @@
 #include "shader_loader.h"
 #include "types.h"
 
+#include <math.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
@@ -80,6 +81,21 @@ int main() {
 		// Triangle magic
 		use_shader(&shader_program);
 
+
+
+		float timeValue = glfwGetTime();
+		float greenValue = (cosf(timeValue) + 1) / 2;
+
+		set_uniform_float(&shader_program, "u_colorMultiplier", greenValue);
+
+		float vec4[] = { 1.0f, 0.5f, 0.25f, 1.0f };
+		float vec3[] = { 1.0f, 0.5f, 0.25f };
+		// set_uniform_vec4(&shader_program, "u_vec4Stuff", vec4);
+		set_uniform_vec3(&shader_program, "u_vec3Stuff", vec3);
+
+		set_uniform_float(&shader_program, "u_positionMultiplier", greenValue);
+
+
 		glBindVertexArray(vertexArray);
 		glDrawElements(GL_TRIANGLES, trianglesSize, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(0);
@@ -90,6 +106,13 @@ int main() {
 		glBindVertexArray(vertexArray2);
 		glDrawElements(GL_TRIANGLES, trianglesSize2, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(0);
+
+
+
+
+		set_uniform_float(&shader_program2, "u_positionMultiplier", -greenValue);
+
+
 
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();
