@@ -1,5 +1,6 @@
 #include "mesh_generator.h"
 #include "shader_loader.h"
+#include "stolen_img_loader.h"
 #include "types.h"
 
 #include <math.h>
@@ -19,12 +20,12 @@ void process_inputs(GLFWwindow* window);
 
 struct Array* provide_shaders(bool useFirst);
 
-void bind_vbo_vao_ebo(
+void elmo_vbo_vao_ebo(
 	unsigned int* vertexBuffer,
 	unsigned int* vertexArray,
 	unsigned int* elementBuffer,
 	unsigned int* trianglesSize,
-	bool		  useFirstIndices
+	unsigned int* texture
 );
 
 int main() {
@@ -50,27 +51,18 @@ int main() {
 		return -1;
 	}
 
-	struct Array* shadersArray1	 = provide_shaders(true);
-	unsigned int  shader_program = compile_shaders_to_shader_program(shadersArray1);
-
-	unsigned int vertexBuffer, // VBO
-		vertexArray,		   // VAO
-		elementBuffer,		   // EBO
-		trianglesSize;
-
-	bind_vbo_vao_ebo(&vertexBuffer, &vertexArray, &elementBuffer, &trianglesSize, true);
-
 	struct Array* shadersArray2	  = provide_shaders(false);
 	unsigned int  shader_program2 = compile_shaders_to_shader_program(shadersArray2);
 
 	unsigned int vertexBuffer2, // VBO
 		vertexArray2,			// VAO
 		elementBuffer2,			// EBO
-		trianglesSize2;
+		trianglesSize2, texture2;
 
-	bind_vbo_vao_ebo(&vertexBuffer2, &vertexArray2, &elementBuffer2, &trianglesSize2, false);
+	elmo_vbo_vao_ebo(&vertexBuffer2, &vertexArray2, &elementBuffer2, &trianglesSize2, &texture2);
+	set_uniform_int(&shader_program2, "u_elmoTexture", 0);
+	use_shader(&shader_program2);
 
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(mainWindow)) {
 
 		process_inputs(mainWindow);
@@ -78,46 +70,24 @@ int main() {
 		glClearColor(screenColors[0], screenColors[1], screenColors[2], 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Triangle magic
-		use_shader(&shader_program);
-
-		// ===================
-		// Fancy uniform logic
-		// ===================
-		float timeValue	 = glfwGetTime();
-		float greenValue = (cosf(timeValue) + 1) / 2;
-		float vec4[]	 = { 1.0f, 0.5f, 0.25f, 1.0f };
-		float vec3[]	 = { 1.0f, 0.5f, 0.25f };
-
-		set_uniform_float(&shader_program, "u_colorMultiplier", greenValue);
-		set_uniform_float(&shader_program, "u_positionMultiplier", greenValue);
-		// set_uniform_vec4(&shader_program, "u_vec4Stuff", vec4);
-		set_uniform_vec3(&shader_program, "u_vec3Stuff", vec3);
-
-		glBindVertexArray(vertexArray);
-		glDrawElements(GL_TRIANGLES, trianglesSize, GL_UNSIGNED_INT, nullptr);
-		glBindVertexArray(0);
-
-		// Triangle magic 2
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 		use_shader(&shader_program2);
 
 		glBindVertexArray(vertexArray2);
-		glDrawElements(GL_TRIANGLES, trianglesSize2, GL_UNSIGNED_INT, nullptr);
-		glBindVertexArray(0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
-		// ===================
-		// Fancy uniform logic
-		// ===================
+		float timeValue	 = glfwGetTime();
+		float greenValue = (cosf(timeValue) + 1) / 2;
 		set_uniform_float(&shader_program2, "u_positionMultiplier", -greenValue);
 
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();
 	}
 
-	glDeleteVertexArrays(1, &vertexArray);
-	glDeleteBuffers(1, &vertexBuffer);
+	glDeleteVertexArrays(1, &vertexArray2);
+	glDeleteBuffers(1, &vertexBuffer2);
 
-	glDeleteProgram(shader_program);
 	glDeleteProgram(shader_program2);
 
 	glfwTerminate();
@@ -158,20 +128,28 @@ struct Array* provide_shaders(bool useFirst) {
 	return new_array(shadersPtr, 2);
 }
 
-void bind_vbo_vao_ebo(
+void elmo_vbo_vao_ebo(
 	unsigned int* vertexBuffer,
 	unsigned int* vertexArray,
 	unsigned int* elementBuffer,
 	unsigned int* trianglesSize,
-	bool		  useFirstIndices
+	unsigned int* texture
 ) {
 
-	struct FloatArray* verticesData = generate_vertices(10, 10);
-	struct IntArray*   indicesData =
-		  useFirstIndices ? generate_indices(10, 10) : generate_indices2(10, 10);
+	// clang-format off
+	float vertices[] = {
+		// pos               // col              // tex coord
+		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
+		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
+	   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
+	   -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+	};
 
-	unsigned long long verticesDataSize = verticesData->length * sizeof(float);
-	unsigned long long indicesDataSize	= indicesData->length * sizeof(unsigned int);
+	unsigned int indices[] = {
+		0, 1, 3,
+		1, 2, 3 ,
+	};
+	// clang-format on
 
 	glGenVertexArrays(1, vertexArray);
 	glGenBuffers(1, vertexBuffer);
@@ -179,18 +157,41 @@ void bind_vbo_vao_ebo(
 
 	glBindVertexArray(*vertexArray);
 
-	// Bind VBO
 	glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, verticesDataSize, verticesData->data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	// Bind EBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *elementBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesDataSize, indicesData->data, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	// Define vertices structure
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
 	glEnableVertexAttribArray(0);
-	*trianglesSize = indicesData->length;
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	*trianglesSize = sizeof(indices) / sizeof(unsigned int);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	glGenTextures(1, texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, *texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	unsigned char* imageData = nullptr;
+	unsigned	   width, height;
+
+	unsigned error = lodepng_decode32_file(&imageData, &width, &height, "res/textures/elmo.png");
+	if (error)
+		fprintf(stderr, "error %u: %s\n", error, lodepng_error_text(error));
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);

@@ -1,9 +1,12 @@
 #version 330 core
 
+in vec3 color;
+in vec2 TexCoord;
+
+uniform sampler2D u_elmoTexture;
+
 out vec4 FragColor;
-in vec2 pos;
 
 void main() {
-    FragColor = vec4(pos.x / 2, cos(pos.y - 1), 0.5f, 1.0f);
-//    FragColor = vec4(1.);
+    FragColor = texture(u_elmoTexture, TexCoord);
 }
