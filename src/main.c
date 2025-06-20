@@ -138,16 +138,18 @@ void elmo_vbo_vao_ebo(
 
 	// clang-format off
 	float vertices[] = {
-		// pos               // col              // tex coord
-		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
-	   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
-	   -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+		// pos               // col              // tex coord (flipped tho)
+		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
+		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
+	   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,
+	   -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f,
+		0.0f, 0.5f,  0.0f,   0.0f, 0.0f, 1.0f,   0.5f, 0.0f
 	};
 
 	unsigned int indices[] = {
-		0, 1, 3,
-		1, 2, 3 ,
+		// 0, 1, 3,
+		// 1, 2, 3 ,
+		1, 2, 4
 	};
 	// clang-format on
 
@@ -186,7 +188,7 @@ void elmo_vbo_vao_ebo(
 	unsigned char* imageData = nullptr;
 	unsigned	   width, height;
 
-	unsigned error = lodepng_decode32_file(&imageData, &width, &height, "res/textures/elmo.png");
+	unsigned error = lodepng_decode32_file(&imageData, &width, &height, "res/textures/obama.png");
 	if (error)
 		fprintf(stderr, "error %u: %s\n", error, lodepng_error_text(error));
 
