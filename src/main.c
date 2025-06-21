@@ -25,7 +25,8 @@ void elmo_vbo_vao_ebo(
 	unsigned int* vertexArray,
 	unsigned int* elementBuffer,
 	unsigned int* trianglesSize,
-	unsigned int* texture
+	unsigned int* texture1,
+	unsigned int* texture2
 );
 
 int main() {
@@ -57,11 +58,14 @@ int main() {
 	unsigned int vertexBuffer2, // VBO
 		vertexArray2,			// VAO
 		elementBuffer2,			// EBO
-		trianglesSize2, texture2;
+		trianglesSize2, texture1, texture2;
 
-	elmo_vbo_vao_ebo(&vertexBuffer2, &vertexArray2, &elementBuffer2, &trianglesSize2, &texture2);
-	set_uniform_int(&shader_program2, "u_elmoTexture", 0);
+	elmo_vbo_vao_ebo(
+		&vertexBuffer2, &vertexArray2, &elementBuffer2, &trianglesSize2, &texture1, &texture2
+	);
 	use_shader(&shader_program2);
+	set_uniform_int(&shader_program2, "u_elmoTexture", 0);
+	set_uniform_int(&shader_program2, "u_obamaTexture", 1);
 
 	while (!glfwWindowShouldClose(mainWindow)) {
 
@@ -71,7 +75,11 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
+
 		use_shader(&shader_program2);
 
 		glBindVertexArray(vertexArray2);
@@ -133,7 +141,8 @@ void elmo_vbo_vao_ebo(
 	unsigned int* vertexArray,
 	unsigned int* elementBuffer,
 	unsigned int* trianglesSize,
-	unsigned int* texture
+	unsigned int* texture1,
+	unsigned int* texture2
 ) {
 
 	// clang-format off
@@ -175,9 +184,11 @@ void elmo_vbo_vao_ebo(
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	glGenTextures(1, texture);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, *texture);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	glGenTextures(1, texture1);
+	glBindTexture(GL_TEXTURE_2D, *texture1);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -185,16 +196,37 @@ void elmo_vbo_vao_ebo(
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	unsigned char* imageData = nullptr;
-	unsigned	   width, height;
+	unsigned char* imageData1 = nullptr;
+	unsigned	   width1, height1;
 
-	unsigned error = lodepng_decode32_file(&imageData, &width, &height, "res/textures/obama.png");
-	if (error)
-		fprintf(stderr, "error %u: %s\n", error, lodepng_error_text(error));
+	unsigned error1 =
+		lodepng_decode32_file(&imageData1, &width1, &height1, "res/textures/obama.png");
+	if (error1)
+		fprintf(stderr, "error1 %u: %s\n", error1, lodepng_error_text(error1));
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA, width1, height1, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData1
+	);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	glGenTextures(1, texture2);
+	glBindTexture(GL_TEXTURE_2D, *texture2);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	unsigned char* imageData2 = nullptr;
+	unsigned	   width2, height2;
+	unsigned	   error2 =
+		lodepng_decode32_file(&imageData2, &width2, &height2, "res/textures/elmo.png");
+	if (error1)
+		fprintf(stderr, "error2 %u: %s\n", error2, lodepng_error_text(error2));
+
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData2
+	);
+	glGenerateMipmap(GL_TEXTURE_2D);
 }
