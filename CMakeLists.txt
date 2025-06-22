@@ -6,9 +6,12 @@ set(CMAKE_C_STANDARD 23)
 # GLFW
 add_subdirectory(lib/glfw)
 
-# GLAD 1
+# GLAD
 add_library(glad STATIC lib/glad/src/glad.c)
 target_include_directories(glad PUBLIC lib/glad/include)
+
+# CGLM
+add_subdirectory(lib/cglm)
 
 # OpenGL
 find_package(OpenGL REQUIRED)
@@ -23,4 +26,4 @@ file(COPY ${RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/res)
 # Executables
 add_executable(y5 ${SRC_FILES})
 
-target_link_libraries(y5 PRIVATE glfw glad OpenGL::GL)
+target_link_libraries(y5 PRIVATE glfw glad cglm OpenGL::GL)

@@ -6,3 +6,7 @@
 	path = lib/glad
 	url = https://github.com/Dav1dde/glad.git
 	branch = c
+
+[submodule "lib/cglm"]
+	path = lib/cglm
+	url = https://github.com/recp/cglm.git

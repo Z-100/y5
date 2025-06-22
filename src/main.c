@@ -3,6 +3,7 @@
 #include "stolen_img_loader.h"
 #include "types.h"
 
+#include <cglm/cglm.h>
 #include <math.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -30,6 +31,8 @@ void elmo_vbo_vao_ebo(
 );
 
 int main() {
+
+	// glm_mat4_mul()
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -64,7 +67,8 @@ int main() {
 		&vertexBuffer2, &vertexArray2, &elementBuffer2, &trianglesSize2, &texture1, &texture2
 	);
 	use_shader(&shader_program2);
-	set_uniform_int(&shader_program2, "u_elmoTexture", 0);
+
+	// set_uniform_int(&shader_program2, "u_elmoTexture", 0);
 	set_uniform_int(&shader_program2, "u_obamaTexture", 1);
 
 	while (!glfwWindowShouldClose(mainWindow)) {
@@ -88,6 +92,13 @@ int main() {
 		float timeValue	 = glfwGetTime();
 		float greenValue = (cosf(timeValue) + 1) / 2;
 		set_uniform_float(&shader_program2, "u_positionMultiplier", -greenValue);
+
+		vec3 zAxis = {0, 0, 1};
+		mat4 rotationTransform = GLM_MAT4_IDENTITY_INIT;
+		glm_rotate(rotationTransform, timeValue, zAxis);
+
+		unsigned int transformer = glGetUniformLocation(shader_program2, "u_rotationTransform");
+		glUniformMatrix4fv(transformer, 1, GL_FALSE, rotationTransform);
 
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();
@@ -200,7 +211,7 @@ void elmo_vbo_vao_ebo(
 	unsigned	   width1, height1;
 
 	unsigned error1 =
-		lodepng_decode32_file(&imageData1, &width1, &height1, "res/textures/obama.png");
+		lodepng_decode32_file(&imageData1, &width1, &height1, "res/textures/elmo.png");
 	if (error1)
 		fprintf(stderr, "error1 %u: %s\n", error1, lodepng_error_text(error1));
 
@@ -221,7 +232,7 @@ void elmo_vbo_vao_ebo(
 	unsigned char* imageData2 = nullptr;
 	unsigned	   width2, height2;
 	unsigned	   error2 =
-		lodepng_decode32_file(&imageData2, &width2, &height2, "res/textures/elmo.png");
+		lodepng_decode32_file(&imageData2, &width2, &height2, "res/textures/obama.png");
 	if (error1)
 		fprintf(stderr, "error2 %u: %s\n", error2, lodepng_error_text(error2));
 
