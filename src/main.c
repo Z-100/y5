@@ -1,4 +1,3 @@
-#include "mesh_generator.h"
 #include "shader_loader.h"
 #include "stolen_img_loader.h"
 #include "types.h"
@@ -32,8 +31,6 @@ void elmo_vbo_vao_ebo(
 
 int main() {
 
-	// glm_mat4_mul()
-
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -55,28 +52,39 @@ int main() {
 		return -1;
 	}
 
-	struct Array* shadersArray2	  = provide_shaders(false);
-	unsigned int  shader_program2 = compile_shaders_to_shader_program(shadersArray2);
+	struct Array* shadersArray	 = provide_shaders(false);
+	unsigned int  shader_program = compile_shaders_to_shader_program(shadersArray);
 
-	unsigned int vertexBuffer2, // VBO
-		vertexArray2,			// VAO
-		elementBuffer2,			// EBO
-		trianglesSize2, texture1, texture2;
+	unsigned int VBO, VAO, EBO, indicesSize, texture1, texture2;
 
-	elmo_vbo_vao_ebo(
-		&vertexBuffer2, &vertexArray2, &elementBuffer2, &trianglesSize2, &texture1, &texture2
-	);
-	use_shader(&shader_program2);
+	elmo_vbo_vao_ebo(&VBO, &VAO, &EBO, &indicesSize, &texture1, &texture2);
+	use_shader(&shader_program);
 
-	// set_uniform_int(&shader_program2, "u_elmoTexture", 0);
-	set_uniform_int(&shader_program2, "u_obamaTexture", 1);
+	set_uniform_int(&shader_program, "u_elmoTexture", 0);
+	set_uniform_int(&shader_program, "u_obamaTexture", 1);
 
+	// clang-format off
+	vec3 cubePositions[] = {
+		{ 0.0f, 0.0f, 0.0f },
+		{ 2.0f, 5.0f, -15.0f },
+		{ -1.5f, -2.2f, -2.5f },
+		{ -3.8f, -2.0f, -12.3f },
+		{ 2.4f, -0.4f, -3.5f },
+		{ -1.7f, 3.0f, -7.5f },
+		{ 1.3f, -2.0f, -2.5f },
+		{ 1.5f, 2.0f, -2.5f },
+		{ 1.5f, 0.2f, -1.5f },
+		{ -1.3f, 1.0f, -1.5f },
+	};
+	// clang-format on
+
+	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(mainWindow)) {
 
 		process_inputs(mainWindow);
 
 		glClearColor(screenColors[0], screenColors[1], screenColors[2], 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
@@ -84,30 +92,38 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
-		use_shader(&shader_program2);
+		use_shader(&shader_program);
 
-		glBindVertexArray(vertexArray2);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		mat4 viewMatrix		  = GLM_MAT4_IDENTITY_INIT;
+		mat4 projectionMatrix = GLM_MAT4_ZERO_INIT;
 
-		float timeValue	 = glfwGetTime();
-		float greenValue = (cosf(timeValue) + 1) / 2;
-		set_uniform_float(&shader_program2, "u_positionMultiplier", -greenValue);
+		glm_translate(viewMatrix, (vec3) { 0.0f, 0.0f, -3.0f });
+		glm_perspective(glm_rad(45.0f), 800.f / 600.f, 0.1f, 100.0f, projectionMatrix);
 
-		vec3 zAxis = {0, 0, 1};
-		mat4 rotationTransform = GLM_MAT4_IDENTITY_INIT;
-		glm_rotate(rotationTransform, timeValue, zAxis);
+		set_uniform_mat4(&shader_program, "u_viewTransform", &viewMatrix);
+		set_uniform_mat4(&shader_program, "u_projectionTransform", &projectionMatrix);
 
-		unsigned int transformer = glGetUniformLocation(shader_program2, "u_rotationTransform");
-		glUniformMatrix4fv(transformer, 1, GL_FALSE, rotationTransform);
+		glBindVertexArray(VAO);
+		for (int i = 0; i < 10; i++) {
+
+			mat4 modelMatrix = GLM_MAT4_IDENTITY_INIT;
+			glm_translate(modelMatrix, cubePositions[i]);
+			float angle = 20.0f * i + 10;
+			glm_rotate(modelMatrix, glm_rad(glfwGetTime() * angle), (vec3) { 1.0f, 0.3f, 0.5f });
+
+			set_uniform_mat4(&shader_program, "u_modelTransform", &modelMatrix);
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();
 	}
 
-	glDeleteVertexArrays(1, &vertexArray2);
-	glDeleteBuffers(1, &vertexBuffer2);
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
 
-	glDeleteProgram(shader_program2);
+	glDeleteProgram(shader_program);
 
 	glfwTerminate();
 	return 0;
@@ -158,45 +174,63 @@ void elmo_vbo_vao_ebo(
 
 	// clang-format off
 	float vertices[] = {
-		// pos               // col              // tex coord (flipped tho)
-		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
-	   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,
-	   -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f,
-		0.0f, 0.5f,  0.0f,   0.0f, 0.0f, 1.0f,   0.5f, 0.0f
-	};
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-	unsigned int indices[] = {
-		// 0, 1, 3,
-		// 1, 2, 3 ,
-		1, 2, 4
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 	// clang-format on
 
 	glGenVertexArrays(1, vertexArray);
 	glGenBuffers(1, vertexBuffer);
-	glGenBuffers(1, elementBuffer);
 
 	glBindVertexArray(*vertexArray);
 
 	glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *elementBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	*trianglesSize = sizeof(indices) / sizeof(unsigned int);
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 
 	glGenTextures(1, texture1);
 	glBindTexture(GL_TEXTURE_2D, *texture1);
@@ -231,7 +265,8 @@ void elmo_vbo_vao_ebo(
 
 	unsigned char* imageData2 = nullptr;
 	unsigned	   width2, height2;
-	unsigned	   error2 =
+
+	unsigned error2 =
 		lodepng_decode32_file(&imageData2, &width2, &height2, "res/textures/obama.png");
 	if (error1)
 		fprintf(stderr, "error2 %u: %s\n", error2, lodepng_error_text(error2));
