@@ -1,6 +1,7 @@
 #include "shader_loader.h"
 #include "stolen_img_loader.h"
 #include "types.h"
+#include "camera.h"
 
 #include <cglm/cglm.h>
 #include <math.h>
@@ -9,26 +10,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const char* TITLE  = "y5";
-const int	WIDTH  = 800;
-const int	HEIGHT = 600;
+// =============
+// = constants =
+// =============
+
+const char*	  TITLE	 = "y5";
+constexpr int WIDTH	 = 800;
+constexpr int HEIGHT = 600;
 
 float screenColors[] = { 0, 1, 0 };
+
+bool  firstMouse = true;
+float lastX		 = 0.0f;
+float lastY		 = 0.0f;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-vec3 cameraPosition = { 0.f, 0.f, 3.f };
-vec3 cameraFront	= { 0.f, 0.f, -1.f };
-vec3 cameraUp		= GLM_VEC3_ZERO_INIT;
+struct Camera* camera;
 
-float lastX = 400, lastY = 300;
-float yaw = 0.f, pitch = 0.f;
-bool  firstMouse = true;
-float fov		 = 45.f;
+// =======================
+// = method declarations =
+// =======================
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xPos, double yPos);
+void mouse_callback(GLFWwindow* window, double xPosD, double yPosD);
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void process_inputs(GLFWwindow* window);
 
@@ -42,6 +48,10 @@ void elmo_vbo_vao_ebo(
 	unsigned int* texture1,
 	unsigned int* texture2
 );
+
+// ==========================
+// = method implementations =
+// ==========================
 
 int main() {
 
@@ -96,10 +106,10 @@ int main() {
 	};
 	// clang-format on
 
-	vec3 cameraTarget			= GLM_VEC3_ZERO_INIT;
-	vec3 cameraDirectionReverse = GLM_VEC3_ZERO_INIT;
-	vec3 upVecWorldSpace		= { 0.f, 1.f, 0.f };
-	vec3 cameraRight			= GLM_VEC3_ZERO_INIT;
+	camera = create_default_camera();
+
+	if (camera == nullptr)
+		return -1;
 
 	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(mainWindow)) {
@@ -121,29 +131,23 @@ int main() {
 
 		use_shader(&shader_program);
 
-		glm_vec3_sub(cameraPosition, cameraTarget, cameraDirectionReverse);
-		glm_normalize(cameraDirectionReverse);
+		mat4 projectionTransform = GLM_MAT4_IDENTITY_INIT;
+		glm_perspective(
+			glm_rad(camera->zoom), (float) WIDTH / (float) HEIGHT, 0.1f, 100.0f, projectionTransform
+		);
+		set_uniform_mat4(&shader_program, "u_projectionTransform", &projectionTransform);
 
-		glm_cross(upVecWorldSpace, cameraDirectionReverse, cameraRight);
-		glm_cross(cameraDirectionReverse, cameraRight, cameraUp);
-
-		vec3 cameraPosFront = GLM_VEC3_ZERO_INIT;
-		glm_vec3_add(cameraPosition, cameraFront, cameraPosFront);
-
-		mat4 viewMatrix = GLM_MAT4_IDENTITY_INIT;
-		glm_lookat(cameraPosition, cameraPosFront, cameraUp, viewMatrix);
-		set_uniform_mat4(&shader_program, "u_viewTransform", &viewMatrix);
-
-		mat4 projectionMatrix = GLM_MAT4_ZERO_INIT;
-		glm_perspective(glm_rad(fov), 800.f / 600.f, 0.1f, 100.0f, projectionMatrix);
-		set_uniform_mat4(&shader_program, "u_projectionTransform", &projectionMatrix);
+		mat4 viewTransform = GLM_MAT4_IDENTITY_INIT;
+		camera_get_view_matrix(camera, &viewTransform);
+		set_uniform_mat4(&shader_program, "u_viewTransform", &viewTransform);
 
 		glBindVertexArray(VAO);
 		for (int i = 0; i < 10; i++) {
 
 			mat4 modelMatrix = GLM_MAT4_IDENTITY_INIT;
 			glm_translate(modelMatrix, cubePositions[i]);
-			float angle = 20.0f * i + 10;
+
+			float angle = 20.0f * (float) i;
 			glm_rotate(modelMatrix, glm_rad(now * angle), (vec3) { 1.0f, 0.3f, 0.5f });
 
 			set_uniform_mat4(&shader_program, "u_modelTransform", &modelMatrix);
@@ -169,7 +173,10 @@ void framebuffer_size_callback(GLFWwindow* window, const int width, const int he
 	fprintf(stdout, "Framebuffer size: (%d*%d)\n", width, height);
 }
 
-void mouse_callback(GLFWwindow* window, double xPos, double yPos) {
+void mouse_callback(GLFWwindow* window, double xPosD, double yPosD) {
+
+	float xPos = (float) xPosD;
+	float yPos = (float) yPosD;
 
 	if (firstMouse) {
 		lastX	   = xPos;
@@ -182,33 +189,11 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos) {
 	lastX		  = xPos;
 	lastY		  = yPos;
 
-	const float sensitivity = 0.1f;
-	xOffset *= sensitivity;
-	yOffset *= sensitivity;
-
-	yaw += xOffset;
-	pitch += yOffset;
-
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
-
-	cameraFront[0] = cos(glm_rad(yaw)) * cos(glm_rad(pitch));
-	cameraFront[1] = sin(glm_rad(pitch));
-	cameraFront[2] = sin(glm_rad(yaw)) * cos(glm_rad(pitch));
-	glm_normalize(cameraFront);
+	camera_process_mouse_movement(xOffset, yOffset, camera);
 }
 
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset) {
-
-	fov -= (float) yOffset;
-
-	if (fov < 1.0f)
-		fov = 1.0f;
-
-	if (fov > 45.0f)
-		fov = 45.0f;
+	camera_process_mouse_scroll((float) yOffset, camera);
 }
 
 void process_inputs(GLFWwindow* window) {
@@ -222,31 +207,17 @@ void process_inputs(GLFWwindow* window) {
 		screenColors[2] += 0.05f;
 	}
 
-	vec3 temp = GLM_VEC3_ZERO_INIT;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera_process_keyboard(FORWARD, deltaTime, camera);
 
-	const float cameraSpeed = 10.f * deltaTime;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		fprintf(stdout, "Keypress w");
-		glm_vec3_scale(cameraFront, cameraSpeed, temp);
-		glm_vec3_add(cameraPosition, temp, cameraPosition);
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		fprintf(stdout, "Keypress a");
-		glm_vec3_cross(cameraUp, cameraFront, temp);
-		glm_vec3_scale(temp, cameraSpeed, temp);
-		glm_vec3_add(cameraPosition, temp, cameraPosition);
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		fprintf(stdout, "Keypress s");
-		glm_vec3_scale(cameraFront, cameraSpeed, temp);
-		glm_vec3_sub(cameraPosition, temp, cameraPosition);
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		fprintf(stdout, "Keypress d");
-		glm_vec3_cross(cameraUp, cameraFront, temp);
-		glm_vec3_scale(temp, cameraSpeed, temp);
-		glm_vec3_sub(cameraPosition, temp, cameraPosition);
-	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera_process_keyboard(LEFT, deltaTime, camera);
+
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera_process_keyboard(BACKWARD, deltaTime, camera);
+
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera_process_keyboard(RIGHT, deltaTime, camera);
 }
 
 struct Array* provide_shaders(bool useFirst) {
@@ -329,7 +300,7 @@ void elmo_vbo_vao_ebo(
 	glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
 
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
