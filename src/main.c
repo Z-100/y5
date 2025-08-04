@@ -198,14 +198,16 @@ void scroll_callback(GLFWwindow* window, double xOffset, double yOffset) {
 
 void process_inputs(GLFWwindow* window) {
 
+	// ---------------
+	// Close da window
+	// ---------------
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		screenColors[0] += 0.05f;
-		screenColors[1] -= 0.05f;
-		screenColors[2] += 0.05f;
-	}
+	// ----------------
+	// Process movemint
+	// ----------------
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera_process_keyboard(FORWARD, deltaTime, camera);
@@ -218,6 +220,12 @@ void process_inputs(GLFWwindow* window) {
 
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera_process_keyboard(RIGHT, deltaTime, camera);
+
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		camera_process_keyboard(UP, deltaTime, camera);
+
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+		camera_process_keyboard(DOWN, deltaTime, camera);
 }
 
 struct Array* provide_shaders(bool useFirst) {

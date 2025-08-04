@@ -75,11 +75,13 @@ void camera_process_keyboard(
 			break;
 
 		case UP:
-			fprintf(stderr, "Invalid call to process_keyboard#UP\n");
+			glm_vec3_scale(camera->up, velocity, tempDirection);
+			glm_vec3_add(camera->position, camera->up, tempDirection);
 			break;
 
 		case DOWN:
-			fprintf(stderr, "Invalid call to process_keyboard#DOWN\n");
+			glm_vec3_scale(camera->up, -velocity, tempDirection);
+			glm_vec3_sub(camera->position, camera->up, tempDirection);
 			break;
 	}
 
