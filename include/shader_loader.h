@@ -4,9 +4,11 @@
 #include "types.h"
 #include "cglm/call/mat4.h"
 
-static const char* VERTEX_SHADER		   = "vertex_shader.glsl";
-static const char* FRAGMENT_SHADER_NOISE_1 = "fragment_shader_noise1.glsl";
-static const char* FRAGMENT_SHADER_NOISE_2 = "fragment_shader_noise2.glsl";
+static const char* VERTEX_SHADER_TEXTURES	= "vertex_shader_textures.glsl";
+static const char* FRAGMENT_SHADER_TEXTURES = "fragment_shader_textures.glsl";
+
+static const char* VERTEX_SHADER_LIGHT_SOURCE	= "vertex_shader_light_source.glsl";
+static const char* FRAGMENT_SHADER_LIGHT_SOURCE = "fragment_shader_light_source.glsl";
 
 unsigned int compile_shaders_to_shader_program(struct Array* shadersArray);
 

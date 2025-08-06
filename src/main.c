@@ -18,8 +18,6 @@ const char*	  TITLE	 = "y5";
 constexpr int WIDTH	 = 800;
 constexpr int HEIGHT = 600;
 
-float screenColors[] = { 0, 1, 0 };
-
 bool  firstMouse = true;
 float lastX		 = 0.0f;
 float lastY		 = 0.0f;
@@ -37,8 +35,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPosD, double yPosD);
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void process_inputs(GLFWwindow* window);
-
-struct Array* provide_shaders(bool useFirst);
 
 void elmo_vbo_vao_ebo(
 	unsigned int* vertexBuffer,
@@ -80,16 +76,39 @@ int main() {
 		return -1;
 	}
 
-	struct Array* shadersArray	 = provide_shaders(false);
-	unsigned int  shader_program = compile_shaders_to_shader_program(shadersArray);
+	struct Shader shaders_texture[] = {
+		{ .name = VERTEX_SHADER_TEXTURES, .type = GL_VERTEX_SHADER },
+		{ .name = FRAGMENT_SHADER_TEXTURES, .type = GL_FRAGMENT_SHADER }
+	};
+
+	struct Shader shaders_light_source[] = {
+		{ .name = VERTEX_SHADER_LIGHT_SOURCE, .type = GL_VERTEX_SHADER },
+		{ .name = FRAGMENT_SHADER_LIGHT_SOURCE, .type = GL_FRAGMENT_SHADER }
+	};
+
+	unsigned int shader_texture = compile_shaders_to_shader_program(new_array(shaders_texture, 2));
+	unsigned int shader_light_source =
+		compile_shaders_to_shader_program(new_array(shaders_light_source, 2));
 
 	unsigned int VBO, VAO, EBO, indicesSize, texture1, texture2;
 
 	elmo_vbo_vao_ebo(&VBO, &VAO, &EBO, &indicesSize, &texture1, &texture2);
-	use_shader(&shader_program);
 
-	set_uniform_int(&shader_program, "u_elmoTexture", 0);
-	set_uniform_int(&shader_program, "u_obamaTexture", 1);
+	use_shader(&shader_texture);
+	set_uniform_int(&shader_texture, "u_elmoTexture", 0);
+	set_uniform_int(&shader_texture, "u_obamaTexture", 1);
+
+	unsigned int lightCubeVAO;
+	glGenVertexArrays(1, &lightCubeVAO);
+	glBindVertexArray(lightCubeVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	// clang-format off
 	vec3 cubePositions[] = {
@@ -106,6 +125,9 @@ int main() {
 	};
 	// clang-format on
 
+	vec3 lightPosition = { 0.0f, 5.0f, 0.0f };
+	vec3 lightColor	   = { 1.0f, 1.0f, 1.0f };
+
 	camera = create_default_camera();
 
 	if (camera == nullptr)
@@ -120,7 +142,7 @@ int main() {
 
 		process_inputs(mainWindow);
 
-		glClearColor(screenColors[0], screenColors[1], screenColors[2], 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
@@ -129,17 +151,18 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
-		use_shader(&shader_program);
+		use_shader(&shader_texture);
+		set_uniform_vec3(&shader_texture, "u_lightColor", &lightColor);
 
 		mat4 projectionTransform = GLM_MAT4_IDENTITY_INIT;
 		glm_perspective(
 			glm_rad(camera->zoom), (float) WIDTH / (float) HEIGHT, 0.1f, 100.0f, projectionTransform
 		);
-		set_uniform_mat4(&shader_program, "u_projectionTransform", &projectionTransform);
+		set_uniform_mat4(&shader_texture, "u_projectionTransform", &projectionTransform);
 
 		mat4 viewTransform = GLM_MAT4_IDENTITY_INIT;
 		camera_get_view_matrix(camera, &viewTransform);
-		set_uniform_mat4(&shader_program, "u_viewTransform", &viewTransform);
+		set_uniform_mat4(&shader_texture, "u_viewTransform", &viewTransform);
 
 		glBindVertexArray(VAO);
 		for (int i = 0; i < 10; i++) {
@@ -150,10 +173,29 @@ int main() {
 			float angle = 20.0f * (float) i;
 			glm_rotate(modelMatrix, glm_rad(now * angle), (vec3) { 1.0f, 0.3f, 0.5f });
 
-			set_uniform_mat4(&shader_program, "u_modelTransform", &modelMatrix);
+			set_uniform_mat4(&shader_texture, "u_modelTransform", &modelMatrix);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+
+		use_shader(&shader_light_source);
+		set_uniform_vec3(&shader_light_source, "u_lightSourceColor", &lightColor);
+
+		set_uniform_mat4(&shader_light_source, "u_projectionTransform", &projectionTransform);
+		set_uniform_mat4(&shader_light_source, "u_viewTransform", &viewTransform);
+
+		mat4 modelTransform = GLM_MAT4_IDENTITY_INIT;
+		glm_translate(modelTransform, lightPosition);
+		glm_scale(modelTransform, (vec3) { 0.2f, 0.2f, 2.0f });
+
+		set_uniform_mat4(&shader_light_source, "u_modelTransform", &modelTransform);
+
+		lightColor[0] = sinf(lastFrame);
+		lightColor[1] = cosf(lastFrame);
+		lightColor[2] = -sinf(lastFrame);
+
+		glBindVertexArray(lightCubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();
@@ -162,7 +204,7 @@ int main() {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 
-	glDeleteProgram(shader_program);
+	glDeleteProgram(shader_texture);
 
 	glfwTerminate();
 	return 0;
@@ -224,25 +266,8 @@ void process_inputs(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		camera_process_keyboard(UP, deltaTime, camera);
 
-	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 		camera_process_keyboard(DOWN, deltaTime, camera);
-}
-
-struct Array* provide_shaders(bool useFirst) {
-
-	struct Shader* shadersPtr = malloc(sizeof(struct Shader) * 2);
-	if (!shadersPtr) {
-		fprintf(stderr, "Failed to allocate shader program memory\n");
-		return new_array(nullptr, 0);
-	}
-
-	shadersPtr[0].name = VERTEX_SHADER;
-	shadersPtr[0].type = GL_VERTEX_SHADER;
-
-	shadersPtr[1].name = useFirst ? FRAGMENT_SHADER_NOISE_1 : FRAGMENT_SHADER_NOISE_2;
-	shadersPtr[1].type = GL_FRAGMENT_SHADER;
-
-	return new_array(shadersPtr, 2);
 }
 
 void elmo_vbo_vao_ebo(
