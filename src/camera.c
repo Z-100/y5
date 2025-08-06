@@ -25,11 +25,11 @@ struct Camera* create_default_camera() {
 
 	glm_vec3_copy(camera->up, camera->worldUp);
 
-	camera->yaw			= DEFAULT_YAW;
-	camera->pitch		= DEFAULT_PITCH;
-	camera->speed		= DEFAULT_SPEED;
-	camera->sensitivity = DEFAULT_SENSITIVITY;
-	camera->zoom		= DEFAULT_ZOOM;
+	camera->yaw				 = DEFAULT_YAW;
+	camera->pitch			 = DEFAULT_PITCH;
+	camera->move_speed		 = DEFAULT_MOVE_SPEED;
+	camera->look_sensitivity = DEFAULT_LOOK_SENSITIVITY;
+	camera->zoom			 = DEFAULT_ZOOM;
 
 	update_camera_vectors(camera);
 
@@ -50,38 +50,40 @@ void camera_process_keyboard(
 	struct Camera*		 camera
 ) {
 
-	float velocity		= camera->speed * deltaTime;
+	float velocity		= camera->move_speed * deltaTime;
 	vec3  tempDirection = GLM_VEC3_ZERO_INIT;
+
+	fprintf(stdout, "DT: %f\tV:%f\n", deltaTime, velocity);
 
 	switch (movement) {
 		case FORWARD:
 			glm_vec3_scale(camera->front, velocity, tempDirection);
-			glm_vec3_add(camera->position, camera->front, tempDirection);
+			glm_vec3_add(camera->position, tempDirection, tempDirection);
 			break;
 
 		case BACKWARD:
 			glm_vec3_scale(camera->front, -velocity, tempDirection);
-			glm_vec3_sub(camera->position, camera->front, tempDirection);
+			glm_vec3_add(camera->position, tempDirection, tempDirection);
 			break;
 
 		case RIGHT:
 			glm_vec3_scale(camera->right, velocity, tempDirection);
-			glm_vec3_add(camera->position, camera->right, tempDirection);
+			glm_vec3_add(camera->position, tempDirection, tempDirection);
 			break;
 
 		case LEFT:
 			glm_vec3_scale(camera->right, -velocity, tempDirection);
-			glm_vec3_sub(camera->position, camera->right, tempDirection);
+			glm_vec3_add(camera->position, tempDirection, tempDirection);
 			break;
 
 		case UP:
 			glm_vec3_scale(camera->up, velocity, tempDirection);
-			glm_vec3_add(camera->position, camera->up, tempDirection);
+			glm_vec3_add(camera->position, tempDirection, tempDirection);
 			break;
 
 		case DOWN:
 			glm_vec3_scale(camera->up, -velocity, tempDirection);
-			glm_vec3_sub(camera->position, camera->up, tempDirection);
+			glm_vec3_add(camera->position, tempDirection, tempDirection);
 			break;
 	}
 
@@ -90,18 +92,13 @@ void camera_process_keyboard(
 
 void camera_process_mouse_movement(float xOffset, float yOffset, struct Camera* camera) {
 
-	xOffset *= camera->sensitivity;
-	yOffset *= camera->sensitivity;
+	xOffset *= camera->look_sensitivity;
+	yOffset *= camera->look_sensitivity;
 
 	camera->yaw += xOffset;
-	camera->pitch += yOffset;
 
-	if (true) {
-		if (camera->pitch > 89.0f)
-			camera->pitch = 89.0f;
-		else if (camera->pitch < -89.0f)
-			camera->pitch = -89.0f;
-	}
+	if (fabsf(camera->pitch + yOffset) <= 89.0f)
+		camera->pitch += yOffset;
 
 	update_camera_vectors(camera);
 }

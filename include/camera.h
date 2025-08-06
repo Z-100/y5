@@ -6,8 +6,8 @@ enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 constexpr float DEFAULT_YAW			= -90.0f;
 constexpr float DEFAULT_PITCH		= 0.0f;
-constexpr float DEFAULT_SPEED		= 0.5f;
-constexpr float DEFAULT_SENSITIVITY = 0.1f;
+constexpr float DEFAULT_MOVE_SPEED		= 1.5f;
+constexpr float DEFAULT_LOOK_SENSITIVITY = 0.1f;
 constexpr float DEFAULT_ZOOM		= 45.0f;
 
 struct Camera {
@@ -20,8 +20,8 @@ struct Camera {
 	float yaw;
 	float pitch;
 
-	float speed;
-	float sensitivity;
+	float move_speed;
+	float look_sensitivity;
 	float zoom;
 };
 

@@ -16,6 +16,7 @@ unsigned int compile_shaders_to_shader_program(struct Array* shadersArray);
 
 void use_shader(const unsigned int* shaderPtr);
 
+int set_uniform_vec3(const unsigned int* shaderPtr, const char* name, const vec3* value);
 int set_uniform_vec4(const unsigned int* shaderPtr, const char* name, const vec4* value);
 
 int set_uniform_mat4(const unsigned int* shaderPtr, const char* name, const mat4* matrix);
