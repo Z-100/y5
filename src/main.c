@@ -14,7 +14,6 @@
 // = constants =
 // =============
 
-const char*	  TITLE	 = "y5";
 constexpr int WIDTH	 = 800;
 constexpr int HEIGHT = 600;
 
@@ -24,6 +23,7 @@ float lastY		 = 0.0f;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+int	  frames	= 0;
 
 struct Camera* camera;
 
@@ -56,7 +56,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* mainWindow = glfwCreateWindow(WIDTH, HEIGHT, TITLE, nullptr, nullptr);
+	GLFWwindow* mainWindow = glfwCreateWindow(WIDTH, HEIGHT, "y5", nullptr, nullptr);
 
 	if (mainWindow == nullptr) {
 		fprintf(stderr, "Error creating window");
@@ -133,12 +133,27 @@ int main() {
 	if (camera == nullptr)
 		return -1;
 
+	char* title = malloc(strlen("y5: XXX FPS"));
+	if (!title) {
+		fprintf(stderr, "Error creating title");
+		return -1;
+	}
+
+	int efficiency = 0;
+
 	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(mainWindow)) {
 
 		float now = (float) glfwGetTime();
 		deltaTime = now - lastFrame;
 		lastFrame = now;
+		frames	  = (int) (1.0f / deltaTime);
+
+		if (efficiency++ == 20) {
+			snprintf(title, sizeof(title), "y5: %d FPS", frames);
+			glfwSetWindowTitle(mainWindow, title);
+			efficiency = 0;
+		}
 
 		process_inputs(mainWindow);
 

@@ -10,9 +10,12 @@ uniform vec3 u_lightColor;
 out vec4 FragColor;
 
 void main() {
-    FragColor = vec4(u_lightColor, 1.0f) * mix(
+
+    vec4 textureMix = mix(
         texture(u_elmoTexture, TexCoord),
-        texture(u_obamaTexture, vec2(TexCoord)),
+        texture(u_obamaTexture, TexCoord),
         0.5
     );
+
+    FragColor = vec4(u_lightColor, 1.0f) * textureMix;
 }
