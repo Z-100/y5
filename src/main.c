@@ -2,6 +2,8 @@
 #include "stolen_img_loader.h"
 #include "types.h"
 #include "camera.h"
+#include "gui.h"
+#include "meth.h"
 
 #include <cglm/cglm.h>
 #include <math.h>
@@ -31,6 +33,10 @@ struct Camera* camera;
 // = method declarations =
 // =======================
 
+static void error_callback(int id, const char* msg) {
+	printf("Error %d: %s\n", id, msg);
+}
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPosD, double yPosD);
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
@@ -51,7 +57,12 @@ void elmo_vbo_vao_ebo(
 
 int main() {
 
-	glfwInit();
+	glfwSetErrorCallback(error_callback);
+	if (!glfwInit()) {
+		fprintf(stderr, "Failed to initialize GLFW\n");
+		return -1;
+	}
+
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -67,11 +78,14 @@ int main() {
 	glfwMakeContextCurrent(mainWindow);
 	glfwSetFramebufferSizeCallback(mainWindow, framebuffer_size_callback);
 
+	// le vsync
+	glfwSwapInterval(1);
+
 	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(mainWindow, mouse_callback);
 	glfwSetScrollCallback(mainWindow, scroll_callback);
 
-	if (!gladLoadGLLoader(glfwGetProcAddress)) {
+	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
 		fprintf(stderr, "Error loading GLAD");
 		return -1;
 	}
@@ -139,6 +153,7 @@ int main() {
 		return -1;
 	}
 
+	// TODO: lol remove
 	int efficiency = 0;
 
 	glEnable(GL_DEPTH_TEST);
@@ -201,13 +216,21 @@ int main() {
 
 		mat4 modelTransform = GLM_MAT4_IDENTITY_INIT;
 		glm_translate(modelTransform, lightPosition);
-		glm_scale(modelTransform, (vec3) { 0.2f, 0.2f, 2.0f });
+
+		vec3 lightSize = {
+			math_max_float(lightColor[0] * 0.2f, 0.1f),
+			math_max_float(lightColor[1] * 0.1f, 0.1f),
+			math_max_float(lightColor[2] * 1.2f, 0.1f),
+		};
+		glm_scale(modelTransform, lightSize);
 
 		set_uniform_mat4(&shader_light_source, "u_modelTransform", &modelTransform);
 
 		lightColor[0] = sinf(lastFrame);
 		lightColor[1] = cosf(lastFrame);
 		lightColor[2] = -sinf(lastFrame);
+
+		glm_vec3_scale(lightColor, lightColor[0] * 1.2f, lightColor);
 
 		glBindVertexArray(lightCubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
