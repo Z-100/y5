@@ -26,7 +26,7 @@ struct Camera* create_default_camera() {
 	glm_vec3_copy(camera->up, camera->worldUp);
 
 	camera->yaw				 = DEFAULT_YAW;
-	camera->pitch			 = DEFAULT_PITCH;
+	camera->pitch			 = DEFAULT_Y5_PITCH;
 	camera->move_speed		 = DEFAULT_MOVE_SPEED;
 	camera->look_sensitivity = DEFAULT_LOOK_SENSITIVITY;
 	camera->zoom			 = DEFAULT_ZOOM;

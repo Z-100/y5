@@ -47,6 +47,7 @@ set(IMGUI_BACKENDS ${IMGUI_DIR}/backends)
 
 file(GLOB CIMGUI_C_FILES
     "${CIMGUI_DIR}/*.c"
+    "${CIMGUI_DIR}/*.cpp"
     "${IMGUI_DIR}/*.cpp"
     "${IMGUI_BACKENDS}/imgui_impl_glfw.cpp"
     "${IMGUI_BACKENDS}/imgui_impl_opengl3.cpp"
@@ -73,7 +74,7 @@ target_link_libraries(cimgui PUBLIC glfw glad OpenGL::GL)
 ##########################
 
 file(GLOB RESOURCES "res/*")
-file(GLOB SRC_FILES "src/*.c")
+file(GLOB SRC_FILES "src/*.c" "src/*.cpp")
 
 include_directories(include)
 file(COPY ${RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/res)

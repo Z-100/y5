@@ -1,16 +1,16 @@
-#include "shader_loader.h"
-#include "stolen_img_loader.h"
-#include "types.h"
-#include "camera.h"
-#include "gui.h"
-#include "meth.h"
-
 #include <cglm/cglm.h>
 #include <math.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "shader_loader.h"
+#include "stolen_img_loader.h"
+#include "types.h"
+#include "camera.h"
+#include "gui.h"
+#include "meth.h"
 
 // =============
 // = constants =
@@ -58,6 +58,7 @@ void elmo_vbo_vao_ebo(
 int main() {
 
 	glfwSetErrorCallback(error_callback);
+
 	if (!glfwInit()) {
 		fprintf(stderr, "Failed to initialize GLFW\n");
 		return -1;
@@ -89,6 +90,8 @@ int main() {
 		fprintf(stderr, "Error loading GLAD");
 		return -1;
 	}
+
+	gui_init(mainWindow);
 
 	struct Shader shaders_texture[] = {
 		{ .name = VERTEX_SHADER_TEXTURES, .type = GL_VERTEX_SHADER },
@@ -158,6 +161,8 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(mainWindow)) {
+
+		gui_update();
 
 		float now = (float) glfwGetTime();
 		deltaTime = now - lastFrame;
@@ -235,6 +240,8 @@ int main() {
 		glBindVertexArray(lightCubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		gui_render();
+
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();
 	}
@@ -243,6 +250,8 @@ int main() {
 	glDeleteBuffers(1, &VBO);
 
 	glDeleteProgram(shader_texture);
+
+	gui_terminate();
 
 	glfwTerminate();
 	return 0;
