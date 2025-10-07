@@ -46,7 +46,6 @@ set(IMGUI_DIR ${CIMGUI_DIR}/imgui)
 set(IMGUI_BACKENDS ${IMGUI_DIR}/backends)
 
 file(GLOB CIMGUI_C_FILES
-    "${CIMGUI_DIR}/*.c"
     "${CIMGUI_DIR}/*.cpp"
     "${IMGUI_DIR}/*.cpp"
     "${IMGUI_BACKENDS}/imgui_impl_glfw.cpp"
