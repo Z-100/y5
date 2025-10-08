@@ -3,9 +3,11 @@
 ##########
 
 cmake_minimum_required(VERSION 3.31)
-project(y5 C CXX)
+project(y5 LANGUAGES C CXX)
+
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 ########
@@ -45,27 +47,33 @@ set(CIMGUI_DIR lib/cimgui)
 set(IMGUI_DIR ${CIMGUI_DIR}/imgui)
 set(IMGUI_BACKENDS ${IMGUI_DIR}/backends)
 
-file(GLOB CIMGUI_C_FILES
-    "${CIMGUI_DIR}/*.cpp"
-    "${IMGUI_DIR}/*.cpp"
-    "${IMGUI_BACKENDS}/imgui_impl_glfw.cpp"
-    "${IMGUI_BACKENDS}/imgui_impl_opengl3.cpp"
+file(GLOB CIMGUI_CPP_FILES
+        "${CIMGUI_DIR}/*.cpp"
+        "${IMGUI_DIR}/*.cpp"
+        "${IMGUI_BACKENDS}/imgui_impl_glfw.cpp"
+        "${IMGUI_BACKENDS}/imgui_impl_opengl3.cpp"
 )
 
-add_library(cimgui STATIC ${CIMGUI_C_FILES})
+add_library(cimgui STATIC ${CIMGUI_CPP_FILES})
+
+set_target_properties(cimgui PROPERTIES LINKER_LANGUAGE CXX)
 
 target_include_directories(cimgui PUBLIC
-    lib/cimgui
-    lib/cimgui/imgui
-    lib/cimgui/imgui/backends
+        ${CIMGUI_DIR}
+        ${IMGUI_DIR}
+        ${IMGUI_BACKENDS}
 )
 
 target_compile_definitions(cimgui PUBLIC
-    IMGUI_IMPL_API=
-    IMGUI_IMPL_OPENGL_LOADER_GLAD
+        IMGUI_IMPL_API=
+        IMGUI_IMPL_OPENGL_LOADER_GLAD
 )
 
-target_link_libraries(cimgui PUBLIC glfw glad OpenGL::GL)
+target_link_libraries(cimgui PUBLIC
+        glfw
+        glad
+        OpenGL::GL
+)
 
 
 ##########################
@@ -73,7 +81,7 @@ target_link_libraries(cimgui PUBLIC glfw glad OpenGL::GL)
 ##########################
 
 file(GLOB RESOURCES "res/*")
-file(GLOB SRC_FILES "src/*.c" "src/*.cpp")
+file(GLOB SRC_FILES "src/*.c" "src/bridges/*.cpp")
 
 include_directories(include)
 file(COPY ${RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/res)
@@ -84,4 +92,13 @@ file(COPY ${RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/res)
 ###############
 
 add_executable(y5 ${SRC_FILES})
-target_link_libraries(y5 PRIVATE glfw glad cglm cimgui OpenGL::GL)
+
+set_target_properties(y5 PROPERTIES LINKER_LANGUAGE C)
+
+target_link_libraries(y5 PRIVATE
+        glfw
+        glad
+        cglm
+        cimgui
+        OpenGL::GL
+)
