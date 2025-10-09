@@ -1,7 +1,7 @@
 #ifndef MESH_GENERATOR_H
 #define MESH_GENERATOR_H
 
-#include "types.h"
+#include "core/types.h"
 
 struct FloatArray* generate_vertices(unsigned int width, unsigned int height);
 

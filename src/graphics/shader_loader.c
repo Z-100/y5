@@ -1,8 +1,8 @@
-#include "shader_loader.h"
-#include "file_reader.h"
-#include "types.h"
-#include "cglm/call/mat4.h"
+#include "graphics/shader_loader.h"
+#include "utils/file_reader.h"
+#include "core/types.h"
 
+#include <cglm/call/mat4.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>

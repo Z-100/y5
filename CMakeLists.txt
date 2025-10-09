@@ -32,6 +32,14 @@ target_include_directories(glad PUBLIC lib/glad/include)
 add_subdirectory(lib/cglm)
 
 
+###########
+# LodePNG #
+###########
+
+add_library(lodepng STATIC lib/lodepng/src/lodepng.c)
+target_include_directories(lodepng PUBLIC lib/lodepng/include)
+
+
 ##########
 # OpenGL #
 ##########
@@ -81,7 +89,17 @@ target_link_libraries(cimgui PUBLIC
 ##########################
 
 file(GLOB RESOURCES "res/*")
-file(GLOB SRC_FILES "src/*.c" "src/bridges/*.cpp")
+
+file(GLOB_RECURSE SRC_FILES
+        CONFIGURE_DEPENDS
+        "src/*.c"
+        "src/bridges/*.cpp"
+)
+
+file(GLOB_RECURSE HDR_FILES
+        CONFIGURE_DEPENDS
+        "include/*.h"
+)
 
 include_directories(include)
 file(COPY ${RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/res)
@@ -91,7 +109,9 @@ file(COPY ${RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/res)
 # Executables #
 ###############
 
-add_executable(y5 ${SRC_FILES})
+add_executable(y5 ${SRC_FILES} ${HDR_FILES})
+
+target_include_directories(y5 PRIVATE src)
 
 set_target_properties(y5 PROPERTIES LINKER_LANGUAGE C)
 
@@ -99,6 +119,7 @@ target_link_libraries(y5 PRIVATE
         glfw
         glad
         cglm
+        lodepng
         cimgui
         OpenGL::GL
 )

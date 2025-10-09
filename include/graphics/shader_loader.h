@@ -1,8 +1,8 @@
 #ifndef SHADER_LOADER_H
 #define SHADER_LOADER_H
 
-#include "types.h"
-#include "cglm/call/mat4.h"
+#include "core/types.h"
+#include <cglm/call/mat4.h>
 
 static const char* VERTEX_SHADER_TEXTURES	= "vertex_shader_textures.glsl";
 static const char* FRAGMENT_SHADER_TEXTURES = "fragment_shader_textures.glsl";

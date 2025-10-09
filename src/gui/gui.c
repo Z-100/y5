@@ -2,11 +2,11 @@
 #define CIMGUI_USE_OPENGL3
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 
-#include "cimgui.h"
-#include "imgui_backends_bridge.h"
+#include <cimgui.h>
 #include <GLFW/glfw3.h>
 
-#include "gui.h"
+#include "bridges/imgui_backends_bridge.h"
+#include "gui/gui.h"
 
 #define igGetIO igGetIO_Nil
 
@@ -76,7 +76,7 @@ void gui_render() {
 void draw_fps_counter() {
 
 	ImVec2 pos = { 0.0f, 0.0f };
-	igSetNextWindowPos(pos, ImGuiCond_Always, (ImVec2){0, 0});
+	igSetNextWindowPos(pos, ImGuiCond_Always, (ImVec2) { 0, 0 });
 
 	igBegin("Perförmance", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 	igText("FPS: %.1f", imgui_io->Framerate);

@@ -1,5 +1,5 @@
-#include "mesh_generator.h"
-#include "types.h"
+#include "graphics/mesh_generator.h"
+#include "core/types.h"
 
 #include <stdio.h>
 

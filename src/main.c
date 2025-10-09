@@ -4,13 +4,13 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <lodepng.h>
 
-#include "shader_loader.h"
-#include "stolen_img_loader.h"
-#include "types.h"
-#include "camera.h"
-#include "gui.h"
-#include "meth.h"
+#include "graphics/shader_loader.h"
+#include "core/types.h"
+#include "graphics/camera.h"
+#include "gui/gui.h"
+#include "utils/math_utils.h"
 
 // =============
 // = constants =
@@ -211,9 +211,9 @@ int main() {
 		glm_translate(modelTransform, lightPosition);
 
 		vec3 lightSize = {
-			math_max_float(lightColor[0] * 0.2f, 0.1f),
-			math_max_float(lightColor[1] * 0.1f, 0.1f),
-			math_max_float(lightColor[2] * 1.2f, 0.1f),
+			math_max2_float(lightColor[0] * 0.2f, 0.1f),
+			math_max2_float(lightColor[1] * 0.1f, 0.1f),
+			math_max2_float(lightColor[2] * 1.2f, 0.1f),
 		};
 		glm_scale(modelTransform, lightSize);
 
