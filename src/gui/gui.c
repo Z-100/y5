@@ -3,58 +3,60 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 
 #include <cimgui.h>
-#include <GLFW/glfw3.h>
 
 #include "bridges/imgui_backends_bridge.h"
 #include "gui/gui.h"
 
-#define igGetIO igGetIO_Nil
+#include "utils/headers_collection.h"
 
 ImGuiContext* imgui_context;
 ImGuiIO*	  imgui_io;
 
 void draw_fps_counter();
 
-float gui_scale() {
+float gui_main_scale() {
 	return cimGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
 }
 
-void gui_init(GLFWwindow* mainWindow) {
+bool gui_init_imgui(const Game* game) {
 
 	igCreateContext(nullptr);
 
-	imgui_io = igGetIO();
+	imgui_io = igGetIO_Nil();
 	imgui_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-	bool cimgui_impl_glfw_init_for_opengl = cimgui_ImplGlfw_InitForOpenGL(mainWindow, true);
+	bool initialized_for_glfw = cimgui_ImplGlfw_InitForOpenGL(game->main_window, true);
 
-	if (!cimgui_impl_glfw_init_for_opengl) {
-		fprintf(stderr, "Failed initializing imgui GLFW backend\n");
-		return;
+	if (!initialized_for_glfw) {
+		log_error("Failed initializing imgui for GLFW");
+		return false;
 	}
 
-	bool cimgui_impl_opengl3_init = cimgui_ImplOpenGL3_Init("#version 130");
+	bool initialized_for_opengl = cimgui_ImplOpenGL3_Init("#version 130");
 
-	if (!cimgui_impl_opengl3_init) {
-		fprintf(stderr, "Failed initializing imgui OpenGL backend\n");
-		return;
+	if (!initialized_for_opengl) {
+		log_error("Failed initializing imgui for OpenGL");
+		return false;
 	}
 
 	igStyleColorsDark(nullptr);
 
-	float		main_scale = gui_scale();
-	ImGuiStyle* style	   = igGetStyle();
+	float main_scale = game->main_scale;
+
+	ImGuiStyle* style = igGetStyle();
 	ImGuiStyle_ScaleAllSizes(style, main_scale);
 	style->FontScaleDpi = main_scale;
+
+	return true;
 }
 
-void gui_terminate() {
+void gui_terminate_imgui() {
 	cimgui_ImplOpenGL3_Shutdown();
 	cimgui_ImplGlfw_Shutdown();
 	igDestroyContext(nullptr);
 }
 
-void gui_update() {
+void gui_update_imgui() {
 	cimgui_ImplOpenGL3_NewFrame();
 	cimgui_ImplGlfw_NewFrame();
 	igNewFrame();
@@ -68,7 +70,7 @@ void gui_update() {
 	igEnd();
 }
 
-void gui_render() {
+void gui_render_imgui() {
 	igRender();
 	cimgui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 }

@@ -1,5 +1,5 @@
-#ifndef MATH_UTILS
-#define MATH_UTILS
+#ifndef MATH_UTILS_H
+#define MATH_UTILS_H
 
 int	  math_max2_int(int a, int b);
 float math_max2_float(float a, float b);

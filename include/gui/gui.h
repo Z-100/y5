@@ -1,10 +1,14 @@
 #ifndef GUI_H
 #define GUI_H
 
-float gui_scale();
-void  gui_init(GLFWwindow* mainWindow);
-void  gui_terminate();
-void  gui_render();
-void  gui_update();
+typedef struct Game Game;
+
+float gui_main_scale();
+
+bool gui_init_imgui(const Game* game);
+
+void gui_terminate_imgui();
+void gui_render_imgui();
+void gui_update_imgui();
 
 #endif

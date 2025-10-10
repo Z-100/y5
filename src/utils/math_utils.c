@@ -1,4 +1,5 @@
 #include "utils/math_utils.h"
+#include "utils/headers_collection.h"
 
 #define MATH_MAX_TWO(C_TYPE) \
 	inline C_TYPE math_max2_##C_TYPE(C_TYPE a, C_TYPE b) { \

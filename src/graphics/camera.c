@@ -1,59 +1,53 @@
 #include "graphics/camera.h"
+#include "utils/headers_collection.h"
 
-// ========================
-// = private declarations =
-// ========================
+bool  camera_is_first_focus = true;
+float camera_last_x			= .0f;
+float camera_last_y			= .0f;
 
-void update_camera_vectors(struct Camera* camera);
+void update_camera_vectors(Camera* camera);
 
-// ===================
-// = implementations =
-// ===================
+int camera_create_player_camera(Game* game) {
 
-struct Camera* create_default_camera() {
+	Camera* player_camera = malloc(sizeof(Camera));
+	game->player_camera = player_camera;
 
-	struct Camera* camera = malloc(sizeof(struct Camera));
-
-	if (!camera) {
-		fprintf(stderr, "Error allocating camera");
-		return nullptr;
+	if (!player_camera) {
+		log_error_f("Failed allocating memory for Camera");
+		return -1;
 	}
 
-	glm_vec3_zero(camera->position);
-	glm_vec3_copy((vec3) { 0.0f, 0.0f, -1.0f }, camera->front);
-	glm_vec3_copy((vec3) { 0.0f, 1.0f, 0.0f }, camera->up);
+	glm_vec3_zero(player_camera->position);
+	glm_vec3_copy((vec3) { 0.0f, 0.0f, -1.0f }, player_camera->front);
+	glm_vec3_copy((vec3) { 0.0f, 1.0f, 0.0f }, player_camera->up);
 
-	glm_vec3_copy(camera->up, camera->worldUp);
+	glm_vec3_copy(player_camera->up, player_camera->worldUp);
 
-	camera->yaw				 = DEFAULT_YAW;
-	camera->pitch			 = DEFAULT_Y5_PITCH;
-	camera->move_speed		 = DEFAULT_MOVE_SPEED;
-	camera->look_sensitivity = DEFAULT_LOOK_SENSITIVITY;
-	camera->zoom			 = DEFAULT_ZOOM;
+	player_camera->yaw				= DEFAULT_YAW;
+	player_camera->pitch			= DEFAULT_Y5_PITCH;
+	player_camera->move_speed		= DEFAULT_MOVE_SPEED;
+	player_camera->look_sensitivity = DEFAULT_LOOK_SENSITIVITY;
+	player_camera->zoom				= DEFAULT_ZOOM;
 
-	update_camera_vectors(camera);
+	update_camera_vectors(player_camera);
 
-	return camera;
+	return 0;
 }
 
-void camera_get_view_matrix(struct Camera* camera, mat4* destViewMatrix) {
+void camera_get_view_matrix(Camera* camera, mat4* dest_view_matrix) {
 
 	vec3 center = GLM_VEC3_ZERO_INIT;
 	glm_vec3_add(camera->position, camera->front, center);
 
-	glm_lookat(camera->position, center, camera->up, *destViewMatrix);
+	glm_lookat(camera->position, center, camera->up, *dest_view_matrix);
 }
 
-void camera_process_keyboard(
-	enum Camera_Movement movement,
-	float				 deltaTime,
-	struct Camera*		 camera
-) {
+void camera_process_keyboard(Game* game, enum Camera_Movement movement) {
 
-	float velocity		= camera->move_speed * deltaTime;
+	Camera* camera = game->player_camera;
+
+	float velocity		= camera->move_speed * game->delta_time;
 	vec3  tempDirection = GLM_VEC3_ZERO_INIT;
-
-	fprintf(stdout, "DT: %f\tV:%f\n", deltaTime, velocity);
 
 	switch (movement) {
 		case FORWARD:
@@ -90,7 +84,19 @@ void camera_process_keyboard(
 	glm_vec3_copy(tempDirection, camera->position);
 }
 
-void camera_process_mouse_movement(float xOffset, float yOffset, struct Camera* camera) {
+void camera_process_mouse_movement(float xPos, float yPos, Camera* camera) {
+
+	if (camera_is_first_focus) {
+		camera_last_x		  = xPos;
+		camera_last_y		  = yPos;
+		camera_is_first_focus = false;
+	}
+
+	float xOffset = xPos - camera_last_x;
+	float yOffset = camera_last_y - yPos;
+
+	camera_last_x = xPos;
+	camera_last_y = yPos;
 
 	xOffset *= camera->look_sensitivity;
 	yOffset *= camera->look_sensitivity;
@@ -103,7 +109,7 @@ void camera_process_mouse_movement(float xOffset, float yOffset, struct Camera* 
 	update_camera_vectors(camera);
 }
 
-void camera_process_mouse_scroll(float yOffset, struct Camera* camera) {
+void camera_process_mouse_scroll(float yOffset, Camera* camera) {
 
 	camera->zoom -= yOffset;
 
@@ -113,7 +119,7 @@ void camera_process_mouse_scroll(float yOffset, struct Camera* camera) {
 		camera->zoom = 45.0f;
 }
 
-void update_camera_vectors(struct Camera* camera) {
+void update_camera_vectors(Camera* camera) {
 
 	camera->front[0] = cosf(glm_rad(camera->yaw)) * cosf(glm_rad(camera->pitch));
 	camera->front[1] = sinf(glm_rad(camera->pitch));

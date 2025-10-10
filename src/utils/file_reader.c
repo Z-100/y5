@@ -1,7 +1,6 @@
 #include "utils/file_reader.h"
+#include "utils/headers_collection.h"
 
-#include <glad/glad.h>
-#include <stdio.h>
 
 char* read_lines_dir_name(const char* directory, const char* fileName) {
 

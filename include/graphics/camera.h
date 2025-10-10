@@ -1,6 +1,10 @@
 #ifndef CAMERA_H
 #define CAMERA_H
-#include "cglm/call/ivec3.h"
+
+typedef float vec3[3];
+typedef float vec4[4];
+typedef vec4  mat4[4];
+typedef struct Game Game;
 
 enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
@@ -10,7 +14,7 @@ enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
 #define DEFAULT_LOOK_SENSITIVITY 0.1f;
 #define DEFAULT_ZOOM 45.0f;
 
-struct Camera {
+typedef struct Camera {
 	vec3 position;
 	vec3 front;
 	vec3 up;
@@ -23,16 +27,12 @@ struct Camera {
 	float move_speed;
 	float look_sensitivity;
 	float zoom;
-};
+} Camera;
 
-struct Camera* create_default_camera();
-
-void camera_get_view_matrix(struct Camera* camera, mat4* destViewMatrix);
-
-void camera_process_keyboard(enum Camera_Movement movement, float deltaTime, struct Camera* camera);
-
-void camera_process_mouse_movement(float xOffset, float yOffset, struct Camera* camera);
-
-void camera_process_mouse_scroll(float yOffset, struct Camera* camera);
+int	 camera_create_player_camera(Game* game);
+void camera_get_view_matrix(Camera* camera, mat4* dest_view_matrix);
+void camera_process_keyboard(Game* game, enum Camera_Movement movement);
+void camera_process_mouse_movement(float xPos, float yPos, Camera* camera);
+void camera_process_mouse_scroll(float yOffset, Camera* camera);
 
 #endif
