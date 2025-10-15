@@ -14,7 +14,7 @@ struct ImDrawData;
 // ========================
 // = GLFW backend bridges =
 // ========================
-float cimGui_ImplGlfw_GetContentScaleForMonitor(struct GLFWmonitor* glfw_wmonitor);
+float cimGui_ImplGlfw_GetContentScaleForMonitor(struct GLFWmonitor* glfw_monitor);
 bool  cimgui_ImplGlfw_InitForOpenGL(struct GLFWwindow* window, bool install_callbacks);
 void  cimgui_ImplGlfw_NewFrame(void);
 void  cimgui_ImplGlfw_Shutdown(void);

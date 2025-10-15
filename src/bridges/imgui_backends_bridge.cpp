@@ -11,8 +11,8 @@ extern "C" {
 // = GLFW backend bridges =
 // ========================
 
-float cimGui_ImplGlfw_GetContentScaleForMonitor(GLFWmonitor* glfw_wmonitor) {
-	return ImGui_ImplGlfw_GetContentScaleForMonitor(glfw_wmonitor);
+float cimGui_ImplGlfw_GetContentScaleForMonitor(GLFWmonitor* glfw_monitor) {
+	return ImGui_ImplGlfw_GetContentScaleForMonitor(glfw_monitor);
 }
 
 bool cimgui_ImplGlfw_InitForOpenGL(GLFWwindow* window, bool install_callbacks) {

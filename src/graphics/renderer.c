@@ -79,16 +79,22 @@ void renderer_initialize_cubes() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (5 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 }
 
 void renderer_game_loop(const Game* game) {
 
 	Camera* player_camera = game->player_camera;
+
+	lightPosition[0] = 7.5f * sinf(game_last_frame());
+	lightPosition[2] = 7.5f * cosf(game_last_frame());
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -100,7 +106,10 @@ void renderer_game_loop(const Game* game) {
 	glBindTexture(GL_TEXTURE_2D, texture2);
 
 	use_shader(&shader_texture);
+	set_uniform_vec3(&shader_texture, "u_lightPos", &lightPosition);
 	set_uniform_vec3(&shader_texture, "u_lightColor", &lightColor);
+	set_uniform_vec3(&shader_texture, "u_viewPos", &player_camera->position);
+	set_uniform_vec3(&shader_texture, "u_objectColor", &lightColor);
 
 	mat4 projectionTransform = GLM_MAT4_IDENTITY_INIT;
 	glm_perspective(
@@ -145,11 +154,6 @@ void renderer_game_loop(const Game* game) {
 
 	set_uniform_mat4(&shader_light_source, "u_modelTransform", &modelTransform);
 
-	lightColor[0] =     0.5f + 0.5f * sinf(1.0 * game->delta_time + 0.0f);
-	lightColor[1] =     0.5f + 0.5f * sinf(1.0 * game->delta_time + 2.0f);
-	lightColor[2] =     0.5f + 0.5f * sinf(1.0 * game->delta_time + 4.0f);
-	glm_vec3_scale(lightColor, lightColor[0] * 1.2f, lightColor);
-
 	glBindVertexArray(lightCubeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
@@ -165,47 +169,48 @@ int elmo_vbo_vao_ebo(
 
 	// clang-format off
 	float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		    /* Vertices */       /* Textures */     /* Normals */
+		-0.5f, -0.5f, -0.5f,	  0.0f, 0.0f,	  0.0f,  0.0f, -1.0f,
+		 0.5f, -0.5f, -0.5f,	  1.0f, 0.0f,	  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	  0.0f,  0.0f, -1.0f,
+		-0.5f,  0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f,  0.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,	  0.0f, 0.0f,	  0.0f,  0.0f, -1.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	  0.0f,  0.0f,  1.0f,
+		 0.5f, -0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,	  1.0f, 1.0f,	  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,	  1.0f, 1.0f,	  0.0f,  0.0f,  1.0f,
+		-0.5f,  0.5f,  0.5f,	  0.0f, 1.0f,	  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	  0.0f,  0.0f,  1.0f,
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	 -1.0f,  0.0f,  0.0f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	  1.0f,  0.0f,  0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,	  1.0f, 1.0f,	  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f, -1.0f,  0.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		-0.5f,  0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,	  0.0f, 0.0f,	  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f,  1.0f,  0.0f
 	};
 	// clang-format on
 
@@ -217,11 +222,14 @@ int elmo_vbo_vao_ebo(
 	glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (5 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	glGenTextures(1, texture1);
 	glBindTexture(GL_TEXTURE_2D, *texture1);

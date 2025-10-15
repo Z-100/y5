@@ -1,7 +1,5 @@
 #version 330 core
 
-in vec2 TexCoord;
-
 uniform vec3 u_lightSourceColor;
 
 out vec4 FragColor;
