@@ -3,11 +3,18 @@
 
 typedef struct GLFWwindow GLFWwindow;
 typedef struct Camera	  Camera;
+typedef float			  vec3[3];
+
+typedef struct GuiStats {
+	vec3* speed;
+	float* fps;
+} GuiStats;
 
 typedef struct Game {
 
 	GLFWwindow* main_window;
 	Camera*		player_camera;
+	GuiStats*	gui_stats;
 
 	float main_scale;
 	float delta_time;

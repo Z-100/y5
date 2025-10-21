@@ -18,10 +18,14 @@ vec3 cubePositions[] = {
 	{ 1.5f, 0.2f, -1.5f },
 	{ -1.3f, 1.0f, -1.5f },
 };
-// clang-format on
 
-vec3 lightPosition = { 0.0f, 5.0f, 0.0f };
-vec3 lightColor	   = { 1.0f, 1.0f, 1.0f };
+Light light = {
+	.position = { 0.0f, 5.0f, 0.0f },
+	.ambient =  { 0.8f, 0.8f, 0.8f },
+	.diffuse =  { 0.5f, 0.5f, 0.5f },
+	.specular = { 1.0f, 1.0f, 1.0f }
+};
+// clang-format on
 
 unsigned int VBO, VAO, EBO, indicesSize, texture1, texture2, lightCubeVAO;
 unsigned int shader_texture, shader_light_source;
@@ -93,8 +97,8 @@ void renderer_game_loop(const Game* game) {
 
 	Camera* player_camera = game->player_camera;
 
-	lightPosition[0] = 7.5f * sinf(game_last_frame());
-	lightPosition[2] = 7.5f * cosf(game_last_frame());
+	light.position[0] = 7.5f * sinf(game_last_frame());
+	light.position[2] = 7.5f * cosf(game_last_frame());
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -106,10 +110,12 @@ void renderer_game_loop(const Game* game) {
 	glBindTexture(GL_TEXTURE_2D, texture2);
 
 	use_shader(&shader_texture);
-	set_uniform_vec3(&shader_texture, "u_lightPos", &lightPosition);
-	set_uniform_vec3(&shader_texture, "u_lightColor", &lightColor);
 	set_uniform_vec3(&shader_texture, "u_viewPos", &player_camera->position);
-	set_uniform_vec3(&shader_texture, "u_objectColor", &lightColor);
+
+	set_uniform_vec3(&shader_texture, "u_light.position", &light.position);
+	set_uniform_vec3(&shader_texture, "u_light.ambient", &light.ambient);
+	set_uniform_vec3(&shader_texture, "u_light.diffuse", &light.diffuse);
+	set_uniform_vec3(&shader_texture, "u_light.specular", &light.specular);
 
 	mat4 projectionTransform = GLM_MAT4_IDENTITY_INIT;
 	glm_perspective(
@@ -125,6 +131,10 @@ void renderer_game_loop(const Game* game) {
 	glBindVertexArray(VAO);
 	for (int i = 0; i < 10; i++) {
 
+		set_uniform_material(
+			&shader_texture, "u_material", i % 3 == 0 ? materials_default() : materials_emerald()
+		);
+
 		mat4 modelMatrix = GLM_MAT4_IDENTITY_INIT;
 		glm_translate(modelMatrix, cubePositions[i]);
 
@@ -137,20 +147,20 @@ void renderer_game_loop(const Game* game) {
 	}
 
 	use_shader(&shader_light_source);
-	set_uniform_vec3(&shader_light_source, "u_lightSourceColor", &lightColor);
+	set_uniform_vec3(&shader_light_source, "u_lightSourceColor", &light.ambient);
 
 	set_uniform_mat4(&shader_light_source, "u_projectionTransform", &projectionTransform);
 	set_uniform_mat4(&shader_light_source, "u_viewTransform", &viewTransform);
 
 	mat4 modelTransform = GLM_MAT4_IDENTITY_INIT;
-	glm_translate(modelTransform, lightPosition);
+	glm_translate(modelTransform, light.position);
 
-	vec3 lightSize = {
-		math_max2_float(lightColor[0] * 0.2f, 0.1f),
-		math_max2_float(lightColor[1] * 0.1f, 0.1f),
-		math_max2_float(lightColor[2] * 1.2f, 0.1f),
-	};
-	glm_scale(modelTransform, lightSize);
+	// vec3 lightSize = {
+	// 	math_max2_float(light.ambient[0] * 0.2f, 0.1f),
+	// 	math_max2_float(light.ambient[1] * 0.1f, 0.1f),
+	// 	math_max2_float(light.ambient[2] * 1.2f, 0.1f),
+	// };
+	// glm_scale(modelTransform, lightSize);
 
 	set_uniform_mat4(&shader_light_source, "u_modelTransform", &modelTransform);
 

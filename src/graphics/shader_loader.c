@@ -146,6 +146,30 @@ int set_uniform_mat4(const unsigned int* shaderPtr, const char* name, const mat4
 	return 0;
 }
 
+int set_uniform_material(
+	const unsigned int* shaderPtr,
+	const char*			name,
+	const Material*		material
+) {
+
+	// Should be enough
+	char uniform_name[64];
+
+	sprintf(uniform_name, "%s.%s", name, "ambient");
+	int ambient_set = set_uniform_vec3(shaderPtr, uniform_name, &material->ambient);
+
+	sprintf(uniform_name, "%s.%s", name, "diffuse");
+	int diffuse_set = set_uniform_vec3(shaderPtr, uniform_name, &material->diffuse);
+
+	sprintf(uniform_name, "%s.%s", name, "specular");
+	int specular_set = set_uniform_vec3(shaderPtr, uniform_name, &material->specular);
+
+	sprintf(uniform_name, "%s.%s", name, "shininess");
+	int shininess_set = set_uniform_float(shaderPtr, uniform_name, material->shininess);
+
+	return ambient_set + diffuse_set + specular_set + shininess_set;
+}
+
 // ======================================================
 // Macros for cheap method overloading? idk but they cool
 // ======================================================

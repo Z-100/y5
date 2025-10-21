@@ -12,6 +12,8 @@
 #include <string.h>
 #include <lodepng.h>
 
+#include "components/materials.h"
+
 #include "core/callbacks.h"
 #include "core/game.h"
 #include "core/types.h"

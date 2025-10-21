@@ -5,6 +5,7 @@ typedef float vec3[3];
 typedef float vec4[4];
 typedef vec4  mat4[4];
 struct Array;
+typedef struct Material Material;
 
 static const char* VERTEX_SHADER_TEXTURES	= "vertex_shader_textures.glsl";
 static const char* FRAGMENT_SHADER_TEXTURES = "fragment_shader_textures.glsl";
@@ -24,6 +25,8 @@ int set_uniform_vec3(const unsigned int* shaderPtr, const char* name, const vec3
 int set_uniform_vec4(const unsigned int* shaderPtr, const char* name, const vec4* value);
 
 int set_uniform_mat4(const unsigned int* shaderPtr, const char* name, const mat4* matrix);
+
+int set_uniform_material(const unsigned int* shaderPtr, const char* name, const Material* material);
 
 // ==============================================
 // Pure declarations - impl by cool ass macros :)
