@@ -1,4 +1,5 @@
 #include "utils/headers_collection.h"
+#include "utils/obj_loader.h"
 
 const char* APP_NAME = "y5";
 void		process_inputs(Game* game);
@@ -6,6 +7,8 @@ void		process_inputs(Game* game);
 int main() {
 
 	log_info_f("Starting %s application", APP_NAME);
+
+	load_obj("res/models", "monkey.obj");
 
 	bool game_initialized = game_init();
 	Game* game = game_get_game();

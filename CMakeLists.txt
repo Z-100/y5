@@ -40,6 +40,13 @@ add_library(lodepng STATIC lib/lodepng/src/lodepng.c)
 target_include_directories(lodepng PUBLIC lib/lodepng/include)
 
 
+#################
+# TinyObjLoader #
+#################
+
+add_subdirectory(lib/tinyobjloader)
+
+
 ##########
 # OpenGL #
 ##########
@@ -120,6 +127,7 @@ target_link_libraries(y5 PRIVATE
         glad
         cglm
         lodepng
+        tinyobjloader
         cimgui
         OpenGL::GL
 )
