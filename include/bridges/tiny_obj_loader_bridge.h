@@ -4,78 +4,17 @@
 extern "C" {
 #endif
 
+// See https://github.com/tinyobjloader/tinyobjloader
 #ifdef TINYOBJLOADER_USE_DOUBLE
 typedef double real_t;
 #else
 typedef float real_t;
 #endif
 
-typedef unsigned int	   u_int;
 typedef unsigned long long size_t;
 
-typedef struct {
-	int vertex_index;
-	int normal_index;
-	int texcoord_index;
-} index_t;
-
-typedef struct {
-	int	   joint_id;
-	real_t weight;
-} joint_and_weight_t;
-
-typedef struct {
-	int vertex_id;
-
-	joint_and_weight_t* weightValues;
-} skin_weight_t;
-
-typedef struct {
-	real_t* vertices;
-
-	real_t* vertex_weights;
-	real_t* normals;
-	real_t* texcoords;
-
-	real_t* texcoord_ws;
-	real_t* colors;
-
-	skin_weight_t* skin_weights;
-} attrib_t;
-
-typedef struct {
-	char*	name;
-	int*	intValues;
-	real_t* floatValues;
-	char*	stringValues;
-} tag_t;
-
-typedef struct {
-	index_t* indices;
-	u_int*	 num_face_vertices;
-	int*	 material_ids;
-	u_int*	 smoothing_group_ids;
-	tag_t*	 tags;
-} mesh_t;
-
-typedef struct {
-	index_t* indices;
-	int*	 num_line_vertices;
-} lines_t;
-
-typedef struct {
-	index_t* indices;
-} points_t;
-
-typedef struct {
-	char*	 name;
-	mesh_t	 mesh;
-	lines_t	 lines;
-	points_t points;
-} shape_t;
-
 typedef enum {
-	TEXTURE_TYPE_NONE,
+	TEXTURE_TYPE_NONE = 0,
 	TEXTURE_TYPE_SPHERE,
 	TEXTURE_TYPE_CUBE_TOP,
 	TEXTURE_TYPE_CUBE_BOTTOM,
@@ -94,16 +33,19 @@ typedef struct {
 	real_t		   scale[3];
 	real_t		   turbulence[3];
 	int			   texture_resolution;
+	bool		   clamp;
+	char		   imfchan;
+	bool		   blendu;
+	bool		   blendv;
+	real_t		   bump_multiplier;
+	char*		   colorspace;
+} tinyobj_texture_option_t;
 
-	bool   clamp;
-	char   imfchan;
-	bool   blendu;
-	bool   blendv;
-	real_t bump_multiplier;
-
-	char* colorspace;
-
-} texture_option_t;
+typedef struct {
+	char** keys;
+	char** values;
+	size_t count;
+} tinyobj_unknown_params_t;
 
 typedef struct {
 	char* name;
@@ -113,13 +55,11 @@ typedef struct {
 	real_t specular[3];
 	real_t transmittance[3];
 	real_t emission[3];
+
 	real_t shininess;
 	real_t ior;
 	real_t dissolve;
-
-	int illum;
-
-	int dummy;
+	int	   illum;
 
 	char* ambient_texname;
 	char* diffuse_texname;
@@ -130,14 +70,14 @@ typedef struct {
 	char* alpha_texname;
 	char* reflection_texname;
 
-	texture_option_t ambient_texopt;
-	texture_option_t diffuse_texopt;
-	texture_option_t specular_texopt;
-	texture_option_t specular_highlight_texopt;
-	texture_option_t bump_texopt;
-	texture_option_t displacement_texopt;
-	texture_option_t alpha_texopt;
-	texture_option_t reflection_texopt;
+	tinyobj_texture_option_t ambient_texopt;
+	tinyobj_texture_option_t diffuse_texopt;
+	tinyobj_texture_option_t specular_texopt;
+	tinyobj_texture_option_t specular_highlight_texopt;
+	tinyobj_texture_option_t bump_texopt;
+	tinyobj_texture_option_t displacement_texopt;
+	tinyobj_texture_option_t alpha_texopt;
+	tinyobj_texture_option_t reflection_texopt;
 
 	real_t roughness;
 	real_t metallic;
@@ -146,33 +86,119 @@ typedef struct {
 	real_t clearcoat_roughness;
 	real_t anisotropy;
 	real_t anisotropy_rotation;
-	real_t pad0;
-	char*  roughness_texname;
-	char*  metallic_texname;
-	char*  sheen_texname;
-	char*  emissive_texname;
-	char*  normal_texname;
 
-	texture_option_t roughness_texopt;
-	texture_option_t metallic_texopt;
-	texture_option_t sheen_texopt;
-	texture_option_t emissive_texopt;
-	texture_option_t normal_texopt;
+	char* roughness_texname;
+	char* metallic_texname;
+	char* sheen_texname;
+	char* emissive_texname;
+	char* normal_texname;
 
-	int pad2;
+	tinyobj_texture_option_t roughness_texopt;
+	tinyobj_texture_option_t metallic_texopt;
+	tinyobj_texture_option_t sheen_texopt;
+	tinyobj_texture_option_t emissive_texopt;
+	tinyobj_texture_option_t normal_texopt;
 
-	char* unknown_parameter;
+	tinyobj_unknown_params_t unknown_parameter;
+} tinyobj_material_t;
 
-} material_t;
+typedef struct {
+	char* name;
+
+	int*   intValues;
+	size_t intValues_count;
+
+	real_t* floatValues;
+	size_t	floatValues_count;
+
+	char** stringValues;
+	size_t stringValues_count;
+} tinyobj_tag_t;
+
+typedef struct {
+	int	   joint_id;
+	real_t weight;
+} tinyobj_joint_and_weight_t;
+
+typedef struct {
+	int							vertex_id;
+	tinyobj_joint_and_weight_t* weightValues;
+	size_t						weightValues_count;
+} tinyobj_skin_weight_t;
+
+typedef struct {
+	int vertex_index;
+	int normal_index;
+	int texcoord_index;
+} tinyobj_index_t;
+
+typedef struct {
+	tinyobj_index_t* indices;
+	size_t*			 indices_count;
+
+	int*	num_face_vertices;
+	size_t* num_face_vertices_count;
+
+	int*   material_ids;
+	size_t material_ids_count;
+
+	unsigned int* smoothing_group_ids;
+	size_t		  smoothing_group_ids_count;
+
+	tinyobj_tag_t* tags;
+	size_t		   tags_count;
+} tinyobj_mesh_t;
+
+typedef struct {
+	tinyobj_index_t* indices;
+	size_t			 indices_count;
+	int*			 num_line_vertices;
+	size_t			 num_line_vertices_count;
+} tinyobj_lines_t;
+
+typedef struct {
+	tinyobj_index_t* indices;
+	size_t			 indices_count;
+} tinyobj_points_t;
+
+typedef struct {
+	char*			  name;
+	tinyobj_mesh_t*	  mesh;
+	tinyobj_lines_t*  lines;
+	tinyobj_points_t* points;
+} tinyobj_shape_t;
+
+typedef struct {
+	real_t* vertices;
+	size_t* vertices_count;
+
+	real_t* vertex_weights;
+	size_t	vertex_weights_count;
+
+	real_t* normals;
+	size_t* normals_count;
+
+	real_t* texcoords;
+	size_t	texcoords_count;
+
+	real_t* texcoord_ws;
+	size_t	texcoord_ws_count;
+
+	real_t* colors;
+	size_t	colors_count;
+
+	tinyobj_skin_weight_t* skin_weights;
+	size_t				   skin_weights_count;
+} tinyobj_attrib_t;
 
 typedef struct ModelObject {
-	attrib_t* attrib;
+	tinyobj_attrib_t* attrib;
 
-	shape_t* shapes;
-	size_t*	 shapes_size;
+	tinyobj_shape_t* shapes;
+	size_t*			 shapes_size;
 
-	material_t* materials;
-	size_t*		materials_size;
+	tinyobj_material_t* materials;
+	size_t*				materials_size;
 
 } ModelObject;
 

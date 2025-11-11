@@ -32,31 +32,31 @@ void load_obj(char* directory, char* filename) {
 
 	bool load_done = tiny_obj_load_obj(model, metadata);
 
-	if (!load_done || metadata->warning || metadata->error) {
-		// TODO: Improve
-		log_error_f("load_obj warning: %s", metadata->warning);
+	if (!load_done || metadata->error) {
 		log_error_f("load_obj error: %s", metadata->error);
 		return;
+	} else if (metadata->warning) {
+		log_error_f("load_obj warning: %s", metadata->warning);
 	}
 
 	// Shapes
 	for (size_t s = 0; s < *model->shapes_size; s++) {
 
-		shape_t current_shape = model->shapes[s];
-		mesh_t	current_mesh  = current_shape.mesh;
+		tinyobj_shape_t current_shape = model->shapes[s];
+		tinyobj_mesh_t* current_mesh  = current_shape.mesh;
 
 		// Faces per shape
 		size_t index_offset = 0;
-		for (size_t f = 0; f < *current_mesh.num_face_vertices; f++) {
+		for (size_t f = 0; f < *current_mesh->num_face_vertices; f++) {
 
-			size_t fv = sizeof(current_mesh.num_face_vertices[f]);
+			size_t fv = sizeof(current_mesh->num_face_vertices[f]);
 
 			// Vertices per face
 			for (size_t v = 0; v < fv; v++) {
 
-				index_t idx = current_mesh.indices[index_offset + v];
+				tinyobj_index_t idx = current_mesh->indices[index_offset + v];
 
-				attrib_t* current_attrib = model->attrib;
+				tinyobj_attrib_t* current_attrib = model->attrib;
 
 				real_t vx = current_attrib->vertices[3 * idx.vertex_index + 0];
 				real_t vy = current_attrib->vertices[3 * idx.vertex_index + 1];
