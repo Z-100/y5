@@ -4,40 +4,38 @@
 
 void load_obj(char* directory, char* filename) {
 
-	size_t len_path	 = strlen(directory) + strlen(filename) + 2;
-	char*  file_path = malloc(len_path);
-
-	if (!file_path) {
-		fprintf(stderr, "Failed malloc for building '%s/%s'\n", directory, filename);
-		return;
-	}
-
-	snprintf(file_path, len_path, "%s/%s", directory, filename);
-
 	ModelObject* model = malloc(sizeof(ModelObject));
-
 	if (!model) {
 		fprintf(stderr, "Failed malloc for building '%s/%s'\n", directory, filename);
 		return;
 	}
 
 	ModelMetadata* metadata = malloc(sizeof(ModelMetadata));
-
 	if (!metadata) {
 		fprintf(stderr, "Failed malloc for building '%s/%s'\n", directory, filename);
 		return;
 	}
 
+	size_t len_path	 = strlen(directory) + strlen(filename) + 2;
+	char*  file_path = malloc(len_path);
+	if (!file_path) {
+		fprintf(stderr, "Failed malloc for building '%s/%s'\n", directory, filename);
+		return;
+	}
+
+	snprintf(file_path, len_path, "%s/%s", directory, filename);
 	metadata->file_path = file_path;
+	metadata->materials_path = "res/models/materials/";
 
 	bool load_done = tiny_obj_load_obj(model, metadata);
 
 	if (!load_done || metadata->error) {
 		log_error_f("load_obj error: %s", metadata->error);
 		return;
-	} else if (metadata->warning) {
-		log_error_f("load_obj warning: %s", metadata->warning);
 	}
+
+	if (metadata->warning)
+		log_error_f("load_obj warning: %s", metadata->warning);
 
 	// Shapes
 	for (size_t s = 0; s < *model->shapes_size; s++) {

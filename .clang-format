@@ -25,6 +25,7 @@ AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 
 BreakBeforeBraces: Attach
+InsertBraces: true
 
 Cpp11BracedListStyle: false
 DerivePointerAlignment: false
@@ -41,7 +42,6 @@ SpaceBeforeParens: ControlStatementsExceptControlMacros
 SpaceBeforeCpp11BracedList: true
 SpaceAfterCStyleCast: true
 SpaceBeforeAssignmentOperators: true
-
 
 IndentCaseLabels: true
 IndentGotoLabels: true

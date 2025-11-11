@@ -105,25 +105,25 @@ typedef struct {
 typedef struct {
 	char* name;
 
-	int*   intValues;
-	size_t intValues_count;
+	int*	intValues;
+	size_t* intValues_count;
 
 	real_t* floatValues;
-	size_t	floatValues_count;
+	size_t* floatValues_count;
 
-	char** stringValues;
-	size_t stringValues_count;
+	char**	stringValues;
+	size_t* stringValues_count;
 } tinyobj_tag_t;
 
 typedef struct {
-	int	   joint_id;
-	real_t weight;
+	int*	   joint_id;
+	real_t* weight;
 } tinyobj_joint_and_weight_t;
 
 typedef struct {
-	int							vertex_id;
+	int*						vertex_id;
 	tinyobj_joint_and_weight_t* weightValues;
-	size_t						weightValues_count;
+	size_t*						weightValues_count;
 } tinyobj_skin_weight_t;
 
 typedef struct {
@@ -136,17 +136,17 @@ typedef struct {
 	tinyobj_index_t* indices;
 	size_t*			 indices_count;
 
-	int*	num_face_vertices;
-	size_t* num_face_vertices_count;
+	unsigned int* num_face_vertices;
+	size_t*		  num_face_vertices_count;
 
-	int*   material_ids;
-	size_t material_ids_count;
+	int*	material_ids;
+	size_t* material_ids_count;
 
 	unsigned int* smoothing_group_ids;
-	size_t		  smoothing_group_ids_count;
+	size_t*		  smoothing_group_ids_count;
 
 	tinyobj_tag_t* tags;
-	size_t		   tags_count;
+	size_t*		   tags_count;
 } tinyobj_mesh_t;
 
 typedef struct {
@@ -173,22 +173,22 @@ typedef struct {
 	size_t* vertices_count;
 
 	real_t* vertex_weights;
-	size_t	vertex_weights_count;
+	size_t* vertex_weights_count;
 
 	real_t* normals;
 	size_t* normals_count;
 
 	real_t* texcoords;
-	size_t	texcoords_count;
+	size_t* texcoords_count;
 
 	real_t* texcoord_ws;
-	size_t	texcoord_ws_count;
+	size_t* texcoord_ws_count;
 
 	real_t* colors;
-	size_t	colors_count;
+	size_t* colors_count;
 
 	tinyobj_skin_weight_t* skin_weights;
-	size_t				   skin_weights_count;
+	size_t*				   skin_weights_count;
 } tinyobj_attrib_t;
 
 typedef struct ModelObject {
@@ -206,6 +206,7 @@ typedef struct ModelMetadata {
 	char* warning;
 	char* error;
 	char* file_path;
+	char* materials_path;
 } ModelMetadata;
 
 bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata);
