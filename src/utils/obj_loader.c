@@ -56,19 +56,19 @@ void load_obj(char* directory, char* filename) {
 
 				tinyobj_attrib_t* current_attrib = model->attrib;
 
-				real_t vx = current_attrib->vertices[3 * idx.vertex_index + 0];
-				real_t vy = current_attrib->vertices[3 * idx.vertex_index + 1];
-				real_t vz = current_attrib->vertices[3 * idx.vertex_index + 2];
+				real_t vx = current_attrib->vertices[3 * *idx.vertex_index + 0];
+				real_t vy = current_attrib->vertices[3 * *idx.vertex_index + 1];
+				real_t vz = current_attrib->vertices[3 * *idx.vertex_index + 2];
 
 				if (idx.normal_index >= 0) {
-					real_t nx = current_attrib->normals[3 * idx.normal_index + 0];
-					real_t ny = current_attrib->normals[3 * idx.normal_index + 1];
-					real_t nz = current_attrib->normals[3 * idx.normal_index + 2];
+					real_t nx = current_attrib->normals[3 * *idx.normal_index + 0];
+					real_t ny = current_attrib->normals[3 * *idx.normal_index + 1];
+					real_t nz = current_attrib->normals[3 * *idx.normal_index + 2];
 				}
 
 				if (idx.texcoord_index >= 0) {
-					real_t tx = current_attrib->texcoords[2 * idx.texcoord_index + 0];
-					real_t ty = current_attrib->texcoords[2 * idx.texcoord_index + 1];
+					real_t tx = current_attrib->texcoords[2 * *idx.texcoord_index + 0];
+					real_t ty = current_attrib->texcoords[2 * *idx.texcoord_index + 1];
 				}
 			}
 

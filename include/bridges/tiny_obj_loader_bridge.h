@@ -26,40 +26,40 @@ typedef enum {
 
 typedef struct {
 	texture_type_t type;
-	real_t		   sharpness;
-	real_t		   brightness;
-	real_t		   contrast;
-	real_t		   origin_offset[3];
-	real_t		   scale[3];
-	real_t		   turbulence[3];
-	int			   texture_resolution;
-	bool		   clamp;
-	char		   imfchan;
-	bool		   blendu;
-	bool		   blendv;
-	real_t		   bump_multiplier;
+	real_t*		   sharpness;
+	real_t*		   brightness;
+	real_t*		   contrast;
+	real_t*		   origin_offset[3];
+	real_t*		   scale[3];
+	real_t*		   turbulence[3];
+	int*		   texture_resolution;
+	bool*		   clamp;
+	char*		   imfchan;
+	bool*		   blendu;
+	bool*		   blendv;
+	real_t*		   bump_multiplier;
 	char*		   colorspace;
 } tinyobj_texture_option_t;
 
 typedef struct {
-	char** keys;
-	char** values;
-	size_t count;
+	char**	keys;
+	char**	values;
+	size_t* count;
 } tinyobj_unknown_params_t;
 
 typedef struct {
 	char* name;
 
-	real_t ambient[3];
-	real_t diffuse[3];
-	real_t specular[3];
-	real_t transmittance[3];
-	real_t emission[3];
+	real_t* ambient[3];
+	real_t* diffuse[3];
+	real_t* specular[3];
+	real_t* transmittance[3];
+	real_t* emission[3];
 
-	real_t shininess;
-	real_t ior;
-	real_t dissolve;
-	int	   illum;
+	real_t* shininess;
+	real_t* ior;
+	real_t* dissolve;
+	int*	illum;
 
 	char* ambient_texname;
 	char* diffuse_texname;
@@ -70,22 +70,22 @@ typedef struct {
 	char* alpha_texname;
 	char* reflection_texname;
 
-	tinyobj_texture_option_t ambient_texopt;
-	tinyobj_texture_option_t diffuse_texopt;
-	tinyobj_texture_option_t specular_texopt;
-	tinyobj_texture_option_t specular_highlight_texopt;
-	tinyobj_texture_option_t bump_texopt;
-	tinyobj_texture_option_t displacement_texopt;
-	tinyobj_texture_option_t alpha_texopt;
-	tinyobj_texture_option_t reflection_texopt;
+	tinyobj_texture_option_t* ambient_texopt;
+	tinyobj_texture_option_t* diffuse_texopt;
+	tinyobj_texture_option_t* specular_texopt;
+	tinyobj_texture_option_t* specular_highlight_texopt;
+	tinyobj_texture_option_t* bump_texopt;
+	tinyobj_texture_option_t* displacement_texopt;
+	tinyobj_texture_option_t* alpha_texopt;
+	tinyobj_texture_option_t* reflection_texopt;
 
-	real_t roughness;
-	real_t metallic;
-	real_t sheen;
-	real_t clearcoat_thickness;
-	real_t clearcoat_roughness;
-	real_t anisotropy;
-	real_t anisotropy_rotation;
+	real_t* roughness;
+	real_t* metallic;
+	real_t* sheen;
+	real_t* clearcoat_thickness;
+	real_t* clearcoat_roughness;
+	real_t* anisotropy;
+	real_t* anisotropy_rotation;
 
 	char* roughness_texname;
 	char* metallic_texname;
@@ -93,13 +93,13 @@ typedef struct {
 	char* emissive_texname;
 	char* normal_texname;
 
-	tinyobj_texture_option_t roughness_texopt;
-	tinyobj_texture_option_t metallic_texopt;
-	tinyobj_texture_option_t sheen_texopt;
-	tinyobj_texture_option_t emissive_texopt;
-	tinyobj_texture_option_t normal_texopt;
+	tinyobj_texture_option_t* roughness_texopt;
+	tinyobj_texture_option_t* metallic_texopt;
+	tinyobj_texture_option_t* sheen_texopt;
+	tinyobj_texture_option_t* emissive_texopt;
+	tinyobj_texture_option_t* normal_texopt;
 
-	tinyobj_unknown_params_t unknown_parameter;
+	tinyobj_unknown_params_t* unknown_parameter;
 } tinyobj_material_t;
 
 typedef struct {
@@ -116,7 +116,7 @@ typedef struct {
 } tinyobj_tag_t;
 
 typedef struct {
-	int*	   joint_id;
+	int*	joint_id;
 	real_t* weight;
 } tinyobj_joint_and_weight_t;
 
@@ -127,9 +127,9 @@ typedef struct {
 } tinyobj_skin_weight_t;
 
 typedef struct {
-	int vertex_index;
-	int normal_index;
-	int texcoord_index;
+	int* vertex_index;
+	int* normal_index;
+	int* texcoord_index;
 } tinyobj_index_t;
 
 typedef struct {
@@ -151,14 +151,14 @@ typedef struct {
 
 typedef struct {
 	tinyobj_index_t* indices;
-	size_t			 indices_count;
+	size_t*			 indices_count;
 	int*			 num_line_vertices;
-	size_t			 num_line_vertices_count;
+	size_t*			 num_line_vertices_count;
 } tinyobj_lines_t;
 
 typedef struct {
 	tinyobj_index_t* indices;
-	size_t			 indices_count;
+	size_t*			 indices_count;
 } tinyobj_points_t;
 
 typedef struct {
