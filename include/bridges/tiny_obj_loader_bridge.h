@@ -200,6 +200,13 @@ typedef struct ModelObject {
 	tinyobj_material_t* materials;
 	size_t*				materials_size;
 
+	// TODO: Remooooove
+	//  TINYOBJLOADER JUST AS BAD AS IMGUI OMGGGG
+	float*		  vertices;
+	size_t		  vertex_count;
+	unsigned int* indices;
+	size_t		  index_count;
+
 } ModelObject;
 
 typedef struct ModelMetadata {

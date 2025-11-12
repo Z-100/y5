@@ -1,4 +1,6 @@
 #include "graphics/renderer.h"
+
+#include "bridges/tiny_obj_loader_bridge.h" // TODO: Remove
 #include "utils/headers_collection.h"
 
 // ============================
@@ -57,7 +59,7 @@ void renderer_destroy() {
 // = TODO: Manage differently =
 // ============================
 
-void renderer_initialize_cubes() {
+void renderer_initialize_cubes(ModelObject* model_object) {
 
 	struct Shader shaders_texture[] = {
 		{ .name = VERTEX_SHADER_TEXTURES, .type = GL_VERTEX_SHADER },
@@ -72,7 +74,7 @@ void renderer_initialize_cubes() {
 	shader_texture		= compile_shaders_to_shader_program(new_array(shaders_texture, 2));
 	shader_light_source = compile_shaders_to_shader_program(new_array(shaders_light_source, 2));
 
-	elmo_vbo_vao_ebo(&VBO, &VAO, &EBO, &indicesSize, &texture1, &texture2);
+	elmo_vbo_vao_ebo(model_object, &VBO, &VAO, &EBO, &indicesSize, &texture1, &texture2);
 
 	use_shader(&shader_texture);
 	set_uniform_int(&shader_texture, "u_elmoTexture", 0);
@@ -83,17 +85,26 @@ void renderer_initialize_cubes() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+	// Updated stride: 8 floats per-vertex: pos(3), tex(2), normal(3)
+	const GLsizei stride = 8 * sizeof(real_t);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) 0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(real_t)));
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (5 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*) (5 * sizeof(real_t)));
+	glEnableVertexAttribArray(2);
+
+	// glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 *
+	// sizeof(float))); glEnableVertexAttribArray(1);
+	//
+	// glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (5 *
+	// sizeof(float))); glEnableVertexAttribArray(1);
 }
 
-void renderer_game_loop(const Game* game) {
+void renderer_game_loop(const Game* game, ModelObject* model) {
 
 	Camera* player_camera = game->player_camera;
 
@@ -143,7 +154,7 @@ void renderer_game_loop(const Game* game) {
 
 		set_uniform_mat4(&shader_texture, "u_modelTransform", &modelMatrix);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawElements(GL_TRIANGLES, model->index_count, GL_UNSIGNED_INT, nullptr);
 	}
 
 	use_shader(&shader_light_source);
@@ -155,20 +166,15 @@ void renderer_game_loop(const Game* game) {
 	mat4 modelTransform = GLM_MAT4_IDENTITY_INIT;
 	glm_translate(modelTransform, light.position);
 
-	// vec3 lightSize = {
-	// 	math_max2_float(light.ambient[0] * 0.2f, 0.1f),
-	// 	math_max2_float(light.ambient[1] * 0.1f, 0.1f),
-	// 	math_max2_float(light.ambient[2] * 1.2f, 0.1f),
-	// };
-	// glm_scale(modelTransform, lightSize);
-
 	set_uniform_mat4(&shader_light_source, "u_modelTransform", &modelTransform);
 
 	glBindVertexArray(lightCubeVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glDrawElements(GL_TRIANGLES, model->index_count, GL_UNSIGNED_INT, nullptr);
 }
 
 int elmo_vbo_vao_ebo(
+	ModelObject*  model,
 	unsigned int* vertexBuffer,
 	unsigned int* vertexArray,
 	unsigned int* elementBuffer,
@@ -177,69 +183,42 @@ int elmo_vbo_vao_ebo(
 	unsigned int* texture2
 ) {
 
-	// clang-format off
-	float vertices[] = {
-		    /* Vertices */       /* Textures */     /* Normals */
-		-0.5f, -0.5f, -0.5f,	  0.0f, 0.0f,	  0.0f,  0.0f, -1.0f,
-		 0.5f, -0.5f, -0.5f,	  1.0f, 0.0f,	  0.0f,  0.0f, -1.0f,
-		 0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	  0.0f,  0.0f, -1.0f,
-		 0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	  0.0f,  0.0f, -1.0f,
-		-0.5f,  0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f,  0.0f, -1.0f,
-		-0.5f, -0.5f, -0.5f,	  0.0f, 0.0f,	  0.0f,  0.0f, -1.0f,
-
-		-0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,	  1.0f, 1.0f,	  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,	  1.0f, 1.0f,	  0.0f,  0.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,	  0.0f, 1.0f,	  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	  0.0f,  0.0f,  1.0f,
-
-		-0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	 -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	 -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	 -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	 -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	 -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	 -1.0f,  0.0f,  0.0f,
-
-		 0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	  1.0f,  0.0f,  0.0f,
-
-		-0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,	  1.0f, 1.0f,	  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,	  0.0f, 0.0f,	  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f, -1.0f,  0.0f,
-
-		-0.5f,  0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,	  1.0f, 1.0f,	  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,	  1.0f, 0.0f,	  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,	  0.0f, 0.0f,	  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,	  0.0f, 1.0f,	  0.0f,  1.0f,  0.0f
-	};
-	// clang-format on
-
 	glGenVertexArrays(1, vertexArray);
 	glGenBuffers(1, vertexBuffer);
+	glGenBuffers(1, elementBuffer);
 
 	glBindVertexArray(*vertexArray);
 
 	glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// model->vertex_count is the number of floats now
+	glBufferData(
+		GL_ARRAY_BUFFER, sizeof(real_t) * model->vertex_count, model->vertices, GL_STATIC_DRAW
+	);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+	// Upload index data
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *elementBuffer);
+	glBufferData(
+		GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * model->index_count, model->indices,
+		GL_STATIC_DRAW
+	);
+
+	// Updated stride: 8 floats per-vertex: pos(3), tex(2), normal(3)
+	const GLsizei stride = 8 * sizeof(real_t);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) 0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(real_t)));
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (5 * sizeof(float)));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*) (5 * sizeof(real_t)));
 	glEnableVertexAttribArray(2);
+
+	// glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 *
+	// sizeof(float))); glEnableVertexAttribArray(1);
+	//
+	// glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (5 *
+	// sizeof(float))); glEnableVertexAttribArray(2);
 
 	glGenTextures(1, texture1);
 	glBindTexture(GL_TEXTURE_2D, *texture1);

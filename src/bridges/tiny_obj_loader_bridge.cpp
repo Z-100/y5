@@ -37,13 +37,10 @@ extern "C" bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata) {
 		metadata->materials_path
 	);
 
-	if (!object_loaded)
-		return false;
-
 	if (!warning.empty())
 		metadata->warning = strdup(warning.c_str());
 
-	if (!error.empty()) {
+	if (!error.empty() || !object_loaded) {
 		metadata->error = strdup(error.c_str());
 		return false;
 	}

@@ -29,6 +29,6 @@
 #include "utils/file_reader.h"
 #include "utils/logger_utils.h"
 #include "utils/math_utils.h"
-#include "utils/obj_loader.h"
+#include "utils/model_loader.h"
 
 #endif

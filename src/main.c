@@ -1,5 +1,4 @@
 #include "utils/headers_collection.h"
-#include "utils/obj_loader.h"
 
 const char* APP_NAME = "y5";
 void		process_inputs(Game* game);
@@ -8,10 +7,10 @@ int main() {
 
 	log_info_f("Starting %s application", APP_NAME);
 
-	load_obj("res/models", "monkey.obj");
+	bool  game_initialized = game_init();
+	Game* game			   = game_get_game();
 
-	bool game_initialized = game_init();
-	Game* game = game_get_game();
+	ModelObject* model = load_model("res/models", "monkey.obj");
 
 	if (!game_initialized || !game)
 		return -1;
@@ -28,7 +27,7 @@ int main() {
 
 	renderer_init_default(game);
 
-	renderer_initialize_cubes();
+	renderer_initialize_cubes(model);
 
 	while (game_is_running(game)) {
 
@@ -37,7 +36,7 @@ int main() {
 
 		gui_update_imgui();
 
-		renderer_game_loop(game);
+		renderer_game_loop(game, model);
 
 		gui_render_imgui();
 
