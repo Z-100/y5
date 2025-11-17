@@ -8,7 +8,7 @@ char* read_lines_dir_name(const char* directory, const char* fileName) {
 	char*  fullPath		  = malloc(fullPathLength);
 
 	if (!fullPath) {
-		fprintf(stderr, "Failed malloc for building '%s/%s'\n", directory, fileName);
+		log_error_f("Failed allocating full file name memory for: '%s/&s'", directory, fileName);
 		return nullptr;
 	}
 
@@ -19,17 +19,17 @@ char* read_lines_dir_name(const char* directory, const char* fileName) {
 
 char* read_lines_path(const char* filePath) {
 
-	fprintf(stdout, "Start reading %s\n", filePath);
+	log_info_f("Start reading: '%s'", filePath);
 
 	FILE* filePtr = fopen(filePath, "r");
 
 	if (!filePtr) {
-		fprintf(stderr, "File not found: %s\n", filePath);
+		log_error_f("File not found: '%s'", filePath);
 		return nullptr;
 	}
 
 	if (fseek(filePtr, 0, SEEK_END) != 0) {
-		fprintf(stderr, "Failed to seek to end of file\n");
+		log_error_f("Failed finding EOF for: '%s'", filePath);
 		fclose(filePtr);
 		return nullptr;
 	}
@@ -37,7 +37,7 @@ char* read_lines_path(const char* filePath) {
 	const int fileLength = ftell(filePtr);
 
 	if (fileLength < 0) {
-		fprintf(stderr, "File is empty\n");
+		log_warn_f("Failed allocating file buffer for: '%s'", filePath);
 		fclose(filePtr);
 		return nullptr;
 	}
@@ -47,15 +47,15 @@ char* read_lines_path(const char* filePath) {
 	char* fileContentBuffer = malloc(fileLength + 1);
 
 	if (!fileContentBuffer) {
+		log_error_f("Failed allocating file buffer for: '%s'", filePath);
 		fclose(filePtr);
-		fprintf(stderr, "Calloc failed\n");
 		return nullptr;
 	}
 
 	const size_t bytesRead = fread(fileContentBuffer, 1, fileLength, filePtr);
 
 	if (bytesRead < (size_t) fileLength && ferror(filePtr)) {
-		fprintf(stderr, "Failed to read from file\n");
+		log_error_f("Failed reading file: '%s'", filePath);
 		fclose(filePtr);
 		free(fileContentBuffer);
 		return nullptr;
@@ -64,7 +64,7 @@ char* read_lines_path(const char* filePath) {
 	fileContentBuffer[bytesRead] = '\0';
 
 	fclose(filePtr);
-	fprintf(stdout, "Finish reading %s\n", filePath);
+	log_info_f("Finish reading: '%s'", filePath);
 
 	return fileContentBuffer;
 }

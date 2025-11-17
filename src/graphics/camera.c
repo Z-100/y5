@@ -13,7 +13,7 @@ int camera_create_player_camera(Game* game) {
 	game->player_camera = player_camera;
 
 	if (!player_camera) {
-		log_error_f("Failed allocating memory for Camera");
+		log_error("Failed allocating memory for Camera");
 		return -1;
 	}
 
