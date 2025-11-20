@@ -47,6 +47,13 @@ target_include_directories(lodepng PUBLIC lib/lodepng/include)
 add_subdirectory(lib/tinyobjloader)
 
 
+#############
+# MiniAudio #
+#############
+
+add_subdirectory(lib/miniaudio)
+
+
 ##########
 # OpenGL #
 ##########
@@ -128,6 +135,7 @@ target_link_libraries(y5 PRIVATE
         cglm
         lodepng
         tinyobjloader
+        miniaudio
         cimgui
         OpenGL::GL
 )

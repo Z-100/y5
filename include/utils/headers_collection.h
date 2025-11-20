@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <lodepng.h>
+#include <miniaudio.h>
 
 #include "components/materials.h"
 
@@ -26,6 +27,7 @@
 
 #include "gui/gui.h"
 
+#include "utils/audio_manager.h"
 #include "utils/file_reader.h"
 #include "utils/logger_utils.h"
 #include "utils/math_utils.h"

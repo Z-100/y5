@@ -10,8 +10,6 @@ int main() {
 	bool  game_initialized = game_init();
 	Game* game			   = game_get_game();
 
-	ModelObject* model = load_model("res/models", "monkey.obj");
-
 	if (!game_initialized || !game)
 		return -1;
 
@@ -25,8 +23,17 @@ int main() {
 	if (!gui_created)
 		return -1;
 
+	ma_engine* sound_engine = init_audio_manager();
+	if (!sound_engine)
+		return -1;
+
+	ma_sound* wololo = load_sound(sound_engine, "wololo.mp3");
+	play_sound(wololo);
+
 	renderer_init_default(game);
 
+	// TODO: Remove from here
+	ModelObject* model = load_model("res/models", "monkey.obj");
 	renderer_initialize_cubes(model);
 
 	while (game_is_running(game)) {
