@@ -49,21 +49,26 @@ extern "C" bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata) {
 	// = Translate attrib_t =
 	// =====================
 
-	auto* c_attrib = static_cast<tinyobj_attrib_t*>(malloc(sizeof(tinyobj_attrib_t)));
+	model->attrib			   = static_cast<tinyobj_attrib_t*>(malloc(sizeof(tinyobj_attrib_t)));
+	tinyobj_attrib_t* c_attrib = model->attrib;
+
 	if (!c_attrib) {
 		metadata->error = strdup("Failed allocating c_attrib");
 		return false;
 	}
 
 	memcpy_attrib_t(&attrib, c_attrib);
-	model->attrib = c_attrib;
 
 	// =============================
 	// = Translate vector<shape_t> =
 	// =============================
 
-	std::size_t shapes_size = shapes.size();
-	auto* c_shapes = static_cast<tinyobj_shape_t*>(malloc(sizeof(tinyobj_shape_t) * shapes_size));
+	model->shapes_size = get_as_pointer(shapes.size());
+	size_t shapes_size = *model->shapes_size;
+
+	model->shapes = static_cast<tinyobj_shape_t*>(malloc(sizeof(tinyobj_shape_t) * shapes_size));
+	tinyobj_shape_t* c_shapes = model->shapes;
+
 	if (!c_shapes) {
 		metadata->error = strdup("Failed allocating c_shapes");
 		free(c_attrib);
@@ -73,16 +78,17 @@ extern "C" bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata) {
 	for (int sh_i = 0; sh_i < shapes_size; sh_i++)
 		memcpy_shape_t(&shapes[sh_i], &c_shapes[sh_i]);
 
-	model->shapes	   = c_shapes;
-	model->shapes_size = get_as_pointer(shapes_size);
-
 	// ================================
 	// = Translate vector<material_t> =
 	// ================================
 
-	std::size_t materials_size = materials.size();
-	auto*		c_materials =
+	model->materials_size = get_as_pointer(materials.size());
+	size_t materials_size = *model->materials_size;
+
+	model->materials =
 		static_cast<tinyobj_material_t*>(malloc(sizeof(tinyobj_material_t) * materials_size));
+	tinyobj_material_t* c_materials = model->materials;
+
 	if (!c_materials) {
 		metadata->error = strdup("Failed allocating c_materials");
 		free(c_attrib);
@@ -92,9 +98,6 @@ extern "C" bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata) {
 
 	for (int sh_i = 0; sh_i < materials_size; sh_i++)
 		memcpy_material_t(&materials[sh_i], &c_materials[sh_i]);
-
-	model->materials	  = c_materials;
-	model->materials_size = get_as_pointer(materials_size);
 
 	return true;
 }
@@ -116,7 +119,7 @@ void memcpy_vector_to_array(
 	Out**								 target,
 	size_t**							 target_size,
 	const std::function<Out(const In&)>& transformer = [](const In& in_val) -> Out {
-		return in_val; // TODO: Check identity - get_as_pointer<>(in_val)
+		return in_val;
 	}
 ) {
 
@@ -132,6 +135,32 @@ void memcpy_vector_to_array(
 	*target_size = get_as_pointer<>(source_size);
 }
 
+void memcpy_indices(
+	std::vector<tinyobj::index_t>& indices,
+	tinyobj_index_t**			   c_indices,
+	size_t*						   c_indices_count
+) {
+
+	*c_indices_count = indices.size();
+
+	*c_indices = static_cast<tinyobj_index_t*>(malloc(sizeof(tinyobj_index_t) * *c_indices_count));
+
+	for (int i = 0; i < *c_indices_count; i++) {
+
+		auto [vertex_index, normal_index, texcoord_index] = indices[i];
+
+		c_indices[i]->vertex_index	 = get_as_pointer(vertex_index);
+		c_indices[i]->normal_index	 = get_as_pointer(normal_index);
+		c_indices[i]->texcoord_index = get_as_pointer(texcoord_index);
+	}
+}
+
+void memcpy_vec3(real_t* source, real_t** target) {
+	*target[0] = *get_as_pointer(source[0]);
+	*target[1] = *get_as_pointer(source[1]);
+	*target[2] = *get_as_pointer(source[2]);
+}
+
 void memcpy_attrib_t(tinyobj::attrib_t* attrib, tinyobj_attrib_t* c_attrib) {
 
 	// clang-format off
@@ -143,34 +172,36 @@ void memcpy_attrib_t(tinyobj::attrib_t* attrib, tinyobj_attrib_t* c_attrib) {
 	memcpy_vector_to_array<>(attrib->colors,         &c_attrib->colors,         &c_attrib->colors_count);
 	// clang-format on
 
-	size_t skin_weights_size = attrib->skin_weights.size();
-	auto*  c_skin_weights	 = static_cast<tinyobj_skin_weight_t*>(
+	c_attrib->skin_weights_count = get_as_pointer(attrib->skin_weights.size());
+	size_t skin_weights_size	 = *c_attrib->skin_weights_count;
+
+	c_attrib->skin_weights = static_cast<tinyobj_skin_weight_t*>(
 		malloc(sizeof(tinyobj_skin_weight_t) * skin_weights_size)
 	);
+	tinyobj_skin_weight_t* c_skin_weights = c_attrib->skin_weights;
 
 	for (int sw_i = 0; sw_i < skin_weights_size; sw_i++) {
 
 		auto [vertex_id, weightValues] = attrib->skin_weights[sw_i];
 
-		size_t joint_and_weight_size = weightValues.size();
-		auto*  joint_and_weights	 = static_cast<tinyobj_joint_and_weight_t*>(
-			 malloc(sizeof(tinyobj_joint_and_weight_t) * joint_and_weight_size)
-		 );
+		c_skin_weights[sw_i].weightValues_count = get_as_pointer(weightValues.size());
+		size_t joint_and_weight_size			= *c_skin_weights[sw_i].weightValues_count;
+
+		c_skin_weights[sw_i].weightValues = static_cast<tinyobj_joint_and_weight_t*>(
+			malloc(sizeof(tinyobj_joint_and_weight_t) * joint_and_weight_size)
+		);
+		tinyobj_joint_and_weight_t* c_weightValues = c_skin_weights[sw_i].weightValues;
 
 		c_skin_weights[sw_i].vertex_id = get_as_pointer(vertex_id);
 
-		for (int i = 0; i < joint_and_weight_size; i++) {
-			auto [joint_id, weight]		  = weightValues[i];
-			joint_and_weights[i].joint_id = get_as_pointer(joint_id);
-			joint_and_weights[i].weight	  = get_as_pointer(weight);
+		for (int jw_i = 0; jw_i < joint_and_weight_size; jw_i++) {
+
+			auto [joint_id, weight] = weightValues[jw_i];
+
+			c_weightValues[jw_i].joint_id = get_as_pointer(joint_id);
+			c_weightValues[jw_i].weight	  = get_as_pointer(weight);
 		}
-
-		c_skin_weights[sw_i].weightValues		= joint_and_weights;
-		c_skin_weights[sw_i].weightValues_count = get_as_pointer(joint_and_weight_size);
 	}
-
-	c_attrib->skin_weights		 = c_skin_weights;
-	c_attrib->skin_weights_count = get_as_pointer(skin_weights_size);
 }
 
 void memcpy_shape_t(tinyobj::shape_t* shape, tinyobj_shape_t* c_shape) {
@@ -180,21 +211,10 @@ void memcpy_shape_t(tinyobj::shape_t* shape, tinyobj_shape_t* c_shape) {
 
 	/* mesh_t */
 	tinyobj::mesh_t mesh   = shape->mesh;
-	auto*			c_mesh = static_cast<tinyobj_mesh_t*>(malloc(sizeof(tinyobj_mesh_t)));
+	c_shape->mesh		   = static_cast<tinyobj_mesh_t*>(malloc(sizeof(tinyobj_mesh_t)));
+	tinyobj_mesh_t* c_mesh = c_shape->mesh;
 
-	size_t indices_size = mesh.indices.size();
-	auto* c_indices = static_cast<tinyobj_index_t*>(malloc(sizeof(tinyobj_index_t) * indices_size));
-	for (int i = 0; i < indices_size; i++) {
-
-		auto [vertex_index, normal_index, texcoord_index] = mesh.indices[i];
-
-		c_indices[i].vertex_index	= get_as_pointer(vertex_index);
-		c_indices[i].normal_index	= get_as_pointer(normal_index);
-		c_indices[i].texcoord_index = get_as_pointer(texcoord_index);
-	}
-
-	c_mesh->indices		  = c_indices;
-	c_mesh->indices_count = get_as_pointer(indices_size);
+	memcpy_indices(mesh.indices, &c_mesh->indices, c_mesh->indices_count);
 
 	// clang-format off
 	memcpy_vector_to_array<>(mesh.num_face_vertices,   &c_mesh->num_face_vertices,   &c_mesh->num_face_vertices_count);
@@ -202,33 +222,159 @@ void memcpy_shape_t(tinyobj::shape_t* shape, tinyobj_shape_t* c_shape) {
 	memcpy_vector_to_array<>(mesh.smoothing_group_ids, &c_mesh->smoothing_group_ids, &c_mesh->smoothing_group_ids_count);
 	// clang-format on
 
-	size_t tags_size = mesh.tags.size();
-	auto*  c_tags	 = static_cast<tinyobj_tag_t*>(malloc(sizeof(tinyobj_tag_t) * tags_size));
-	for (int i = 0; i < tags_size; i++) {
+	c_mesh->tags_count = get_as_pointer(mesh.tags.size());
+	size_t tags_size   = *c_mesh->tags_count;
 
-		auto [name, intValues, floatValues, stringValues] = mesh.tags[i];
+	c_mesh->tags		  = static_cast<tinyobj_tag_t*>(malloc(sizeof(tinyobj_tag_t) * tags_size));
+	tinyobj_tag_t* c_tags = c_mesh->tags;
 
-		c_tags[i].name = strdup(name.c_str());
+	for (int t_i = 0; t_i < tags_size; t_i++) {
+
+		auto [name, intValues, floatValues, stringValues] = mesh.tags[t_i];
+
+		c_tags[t_i].name = strdup(name.c_str());
 
 		// clang-format off
-		memcpy_vector_to_array<>(intValues,    &c_tags[i].intValues,    &c_tags[i].intValues_count);
-		memcpy_vector_to_array<>(floatValues,  &c_tags[i].floatValues,  &c_tags[i].floatValues_count);
-		memcpy_vector_to_array<>(stringValues, &c_tags[i].stringValues, &c_tags[i].stringValues_count, string_transformer);
+		memcpy_vector_to_array<>(intValues,    &c_tags[t_i].intValues,    &c_tags[t_i].intValues_count);
+		memcpy_vector_to_array<>(floatValues,  &c_tags[t_i].floatValues,  &c_tags[t_i].floatValues_count);
+		memcpy_vector_to_array<>(stringValues, &c_tags[t_i].stringValues, &c_tags[t_i].stringValues_count, string_transformer);
 		// clang-format on
 	}
 
-	c_mesh->tags	   = c_tags;
-	c_mesh->tags_count = get_as_pointer(tags_size);
-
-	c_shape->mesh = c_mesh;
-
 	/* lines_t */
-	tinyobj::lines_t lines = shape->lines;
+	tinyobj::lines_t lines	 = shape->lines;
+	c_shape->lines			 = static_cast<tinyobj_lines_t*>(malloc(sizeof(tinyobj_lines_t)));
+	tinyobj_lines_t* c_lines = c_shape->lines;
+
+	memcpy_indices(lines.indices, &c_lines->indices, c_lines->indices_count);
+
+	memcpy_vector_to_array<>(
+		lines.num_line_vertices, &c_lines->num_line_vertices, &c_lines->num_line_vertices_count
+	);
 
 	/* points_t */
-	tinyobj::points_t points = shape->points;
+	tinyobj::points_t points   = shape->points;
+	c_shape->points			   = static_cast<tinyobj_points_t*>(malloc(sizeof(tinyobj_points_t)));
+	tinyobj_points_t* c_points = c_shape->points;
+
+	memcpy_indices(points.indices, &c_points->indices, c_points->indices_count);
+}
+
+void memcpy_texture_option_t(
+	tinyobj::texture_option_t& texture_option,
+	tinyobj_texture_option_t*  c_texture_option
+) {
+
+	texture_type_t c_texture_type;
+	switch (texture_option.type) {
+		case tinyobj::TEXTURE_TYPE_NONE:
+			c_texture_type = TEXTURE_TYPE_NONE;
+			break;
+		case tinyobj::TEXTURE_TYPE_SPHERE:
+			c_texture_type = TEXTURE_TYPE_SPHERE;
+			break;
+		case tinyobj::TEXTURE_TYPE_CUBE_TOP:
+			c_texture_type = TEXTURE_TYPE_CUBE_TOP;
+			break;
+		case tinyobj::TEXTURE_TYPE_CUBE_BOTTOM:
+			c_texture_type = TEXTURE_TYPE_CUBE_BOTTOM;
+			break;
+		case tinyobj::TEXTURE_TYPE_CUBE_FRONT:
+			c_texture_type = TEXTURE_TYPE_CUBE_FRONT;
+			break;
+		case tinyobj::TEXTURE_TYPE_CUBE_BACK:
+			c_texture_type = TEXTURE_TYPE_CUBE_BACK;
+			break;
+		case tinyobj::TEXTURE_TYPE_CUBE_LEFT:
+			c_texture_type = TEXTURE_TYPE_CUBE_LEFT;
+			break;
+		case tinyobj::TEXTURE_TYPE_CUBE_RIGHT:
+			c_texture_type = TEXTURE_TYPE_CUBE_RIGHT;
+			break;
+		default:
+			c_texture_type = TEXTURE_TYPE_NONE;
+	}
+
+	c_texture_option->type = get_as_pointer(c_texture_type);
+
+
+	c_texture_option->sharpness	 = get_as_pointer(texture_option.sharpness);
+	c_texture_option->brightness = get_as_pointer(texture_option.brightness);
+	c_texture_option->contrast	 = get_as_pointer(texture_option.contrast);
+
+	// clang-format off
+	memcpy_vec3(texture_option.origin_offset, c_texture_option->origin_offset);
+	memcpy_vec3(texture_option.scale,         c_texture_option->scale);
+	memcpy_vec3(texture_option.turbulence,    c_texture_option->turbulence);
+	// clang-format on
+
+	c_texture_option->texture_resolution = get_as_pointer(texture_option.texture_resolution);
+	c_texture_option->clamp				 = get_as_pointer(texture_option.clamp);
+	c_texture_option->imfchan			 = get_as_pointer(texture_option.imfchan);
+	c_texture_option->blendu			 = get_as_pointer(texture_option.blendu);
+	c_texture_option->blendv			 = get_as_pointer(texture_option.blendv);
+	c_texture_option->bump_multiplier	 = get_as_pointer(texture_option.bump_multiplier);
+	c_texture_option->colorspace		 = strdup(texture_option.colorspace.c_str());
 }
 
 void memcpy_material_t(tinyobj::material_t* material, tinyobj_material_t* c_material) {
-	// shit
+
+	c_material->name = strdup(material->name.c_str());
+
+	// clang-format off
+	memcpy_vec3(material->ambient,       c_material->ambient);
+	memcpy_vec3(material->diffuse,       c_material->diffuse);
+	memcpy_vec3(material->specular,      c_material->specular);
+	memcpy_vec3(material->transmittance, c_material->transmittance);
+	memcpy_vec3(material->emission,      c_material->emission);
+	// clang-format on
+
+	c_material->shininess = get_as_pointer(material->shininess);
+	c_material->ior		  = get_as_pointer(material->ior);
+	c_material->dissolve  = get_as_pointer(material->dissolve);
+	c_material->illum	  = get_as_pointer(material->illum);
+
+	c_material->ambient_texname			   = strdup(material->ambient_texname.c_str());
+	c_material->diffuse_texname			   = strdup(material->diffuse_texname.c_str());
+	c_material->specular_texname		   = strdup(material->specular_texname.c_str());
+	c_material->specular_highlight_texname = strdup(material->specular_highlight_texname.c_str());
+	c_material->bump_texname			   = strdup(material->bump_texname.c_str());
+	c_material->displacement_texname	   = strdup(material->displacement_texname.c_str());
+	c_material->alpha_texname			   = strdup(material->alpha_texname.c_str());
+	c_material->reflection_texname		   = strdup(material->reflection_texname.c_str());
+
+	// clang-format off
+	memcpy_texture_option_t(material->ambient_texopt,            c_material->ambient_texopt);
+	memcpy_texture_option_t(material->diffuse_texopt,            c_material->diffuse_texopt);
+	memcpy_texture_option_t(material->specular_texopt,           c_material->specular_texopt);
+	memcpy_texture_option_t(material->specular_highlight_texopt, c_material->specular_highlight_texopt);
+	memcpy_texture_option_t(material->bump_texopt,               c_material->bump_texopt);
+	memcpy_texture_option_t(material->displacement_texopt,       c_material->displacement_texopt);
+	memcpy_texture_option_t(material->alpha_texopt,              c_material->alpha_texopt);
+	memcpy_texture_option_t(material->reflection_texopt,         c_material->reflection_texopt);
+	// clang-format on
+
+	c_material->roughness			= get_as_pointer(material->roughness);
+	c_material->metallic			= get_as_pointer(material->metallic);
+	c_material->sheen				= get_as_pointer(material->sheen);
+	c_material->clearcoat_thickness = get_as_pointer(material->clearcoat_thickness);
+	c_material->clearcoat_roughness = get_as_pointer(material->clearcoat_roughness);
+	c_material->anisotropy			= get_as_pointer(material->anisotropy);
+	c_material->anisotropy_rotation = get_as_pointer(material->anisotropy_rotation);
+
+	c_material->roughness_texname = strdup(material->roughness_texname.c_str());
+	c_material->metallic_texname  = strdup(material->metallic_texname.c_str());
+	c_material->sheen_texname	  = strdup(material->sheen_texname.c_str());
+	c_material->emissive_texname  = strdup(material->emissive_texname.c_str());
+	c_material->normal_texname	  = strdup(material->normal_texname.c_str());
+
+	// clang-format off
+	memcpy_texture_option_t(material->roughness_texopt, c_material->roughness_texopt);
+	memcpy_texture_option_t(material->metallic_texopt,  c_material->metallic_texopt);
+	memcpy_texture_option_t(material->sheen_texopt,     c_material->sheen_texopt);
+	memcpy_texture_option_t(material->emissive_texopt,  c_material->emissive_texopt);
+	memcpy_texture_option_t(material->normal_texopt,    c_material->normal_texopt);
+	// clang-format on
+
+	/* TODO: Unknown parameters? */
 }

@@ -25,7 +25,7 @@ typedef enum {
 } texture_type_t;
 
 typedef struct {
-	texture_type_t type;
+	texture_type_t* type;
 	real_t*		   sharpness;
 	real_t*		   brightness;
 	real_t*		   contrast;

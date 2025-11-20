@@ -3,7 +3,7 @@
 
 #include <time.h>
 
-const char* time_type_location_message = "%s - %s - %s: <%s>";
+const char* time_type_location_message_format = "%s | %s | %s | <%s>";
 
 char* get_date_time() {
 
@@ -55,8 +55,8 @@ void _log_f(int log_type, char* file, int line, char* message, ...) {
 
 	char formatted_log_msg[1024];
 	snprintf(
-		formatted_log_msg, sizeof(formatted_log_msg), time_type_location_message, date_time, type,
-		location, message ? message : ""
+		formatted_log_msg, sizeof(formatted_log_msg), time_type_location_message_format, date_time,
+		type, location, message ? message : ""
 	);
 
 	va_list args;
