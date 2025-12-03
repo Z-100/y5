@@ -12,6 +12,7 @@ typedef float real_t;
 #endif
 
 typedef unsigned long long size_t;
+typedef real_t			   vec3[3];
 
 typedef enum {
 	TEXTURE_TYPE_NONE = 0,
@@ -26,19 +27,19 @@ typedef enum {
 
 typedef struct {
 	texture_type_t* type;
-	real_t*		   sharpness;
-	real_t*		   brightness;
-	real_t*		   contrast;
-	real_t*		   origin_offset[3];
-	real_t*		   scale[3];
-	real_t*		   turbulence[3];
-	int*		   texture_resolution;
-	bool*		   clamp;
-	char*		   imfchan;
-	bool*		   blendu;
-	bool*		   blendv;
-	real_t*		   bump_multiplier;
-	char*		   colorspace;
+	real_t*			sharpness;
+	real_t*			brightness;
+	real_t*			contrast;
+	vec3*			origin_offset;
+	vec3*			scale;
+	vec3*			turbulence;
+	int*			texture_resolution;
+	bool*			clamp;
+	char*			imfchan;
+	bool*			blendu;
+	bool*			blendv;
+	real_t*			bump_multiplier;
+	char*			colorspace;
 } tinyobj_texture_option_t;
 
 typedef struct {
@@ -50,11 +51,11 @@ typedef struct {
 typedef struct {
 	char* name;
 
-	real_t* ambient[3];
-	real_t* diffuse[3];
-	real_t* specular[3];
-	real_t* transmittance[3];
-	real_t* emission[3];
+	vec3* ambient;
+	vec3* diffuse;
+	vec3* specular;
+	vec3* transmittance;
+	vec3* emission;
 
 	real_t* shininess;
 	real_t* ior;
