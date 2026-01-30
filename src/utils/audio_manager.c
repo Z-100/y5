@@ -1,8 +1,6 @@
 #include "utils/audio_manager.h"
 #include "utils/headers_collection.h"
 
-const char* DEFAULT_AUDIO_DIR = "res/audio";
-
 ma_engine* init_audio_manager() {
 
 	ma_engine* sound_engine = malloc(sizeof(ma_engine));
@@ -36,7 +34,7 @@ ma_sound* load_sound(ma_engine* engine, char* sound_name) {
 		return nullptr;
 	}
 
-	char* sound_path = concat_dir_file(DEFAULT_AUDIO_DIR, sound_name);
+	char* sound_path = concat_dir_file("res/audio", sound_name);
 	if (sound_path == nullptr)
 		return nullptr;
 

@@ -11,7 +11,7 @@ typedef double real_t;
 typedef float real_t;
 #endif
 
-typedef unsigned long long size_t;
+#include <stddef.h>
 typedef real_t			   vec3[3];
 
 typedef enum {

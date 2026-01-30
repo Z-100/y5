@@ -54,11 +54,12 @@ add_subdirectory(lib/tinyobjloader)
 add_subdirectory(lib/miniaudio)
 
 
-##########
-# OpenGL #
-##########
+################
+# OpenGL + X11 #
+################
 
 find_package(OpenGL REQUIRED)
+find_package(X11 REQUIRED)
 
 
 ##########
@@ -127,7 +128,7 @@ add_executable(y5 ${SRC_FILES} ${HDR_FILES})
 
 target_include_directories(y5 PRIVATE src)
 
-set_target_properties(y5 PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(y5 PROPERTIES LINKER_LANGUAGE CXX)
 
 target_link_libraries(y5 PRIVATE
         glfw
@@ -138,4 +139,8 @@ target_link_libraries(y5 PRIVATE
         miniaudio
         cimgui
         OpenGL::GL
+        ${X11_LIBRARIES}
+        stdc++
+        m
+        dl
 )
