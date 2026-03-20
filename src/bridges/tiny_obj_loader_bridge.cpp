@@ -25,8 +25,9 @@ template <typename T> T* get_as_pointer(T t_val) {
 
 	T* t_ptr = static_cast<T*>(malloc(sizeof(T)));
 
-	if (!t_ptr)
+	if (!t_ptr) {
 		return nullptr;
+	}
 
 	*t_ptr = t_val;
 	return t_ptr;
@@ -39,10 +40,10 @@ void add_error(ModelMetadata* metadata, const std::string& msg) {
 		return;
 	}
 
-	std::string combined_msgs = std::string(metadata->error) + ";" + msg;
+	std::string combined_errors = std::string(metadata->error) + ";" + msg;
 
 	free(metadata->error);
-	metadata->error = strdup(combined_msgs.c_str());
+	metadata->error = strdup(combined_errors.c_str());
 }
 
 extern "C" bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata) {
@@ -57,55 +58,76 @@ extern "C" bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata) {
 	std::string warning;
 	std::string error;
 
+	log_info_f("Start loading object '%s'", metadata->file_path);
+
 	bool object_loaded = tinyobj::LoadObj(
 		&attrib, &shapes, &materials, &warning, &error, metadata->file_path,
 		metadata->materials_path
 	);
 
-	if (!warning.empty())
+	if (!warning.empty()) {
 		metadata->warning = strdup(warning.c_str());
+		log_warn_f("Warning loading object: '%s'", metadata->warning);
+	}
 
 	if (!error.empty() || !object_loaded) {
 		metadata->error = strdup(error.c_str());
+		log_error_f("Error loading object: '%s'", metadata->error);
 		return false;
 	}
 
-	// =====================
+	log_info("Finish loading object");
+
+	// ======================
 	// = Translate attrib_t =
-	// =====================
+	// ======================
+
+	log_info("Start translating attrib_t");
 
 	model->attrib			   = static_cast<tinyobj_attrib_t*>(malloc(sizeof(tinyobj_attrib_t)));
 	tinyobj_attrib_t* c_attrib = model->attrib;
 
 	if (!c_attrib) {
+		log_error("Error allocating memory for c_attrib");
 		add_error(metadata, "Failed allocating c_attrib");
 		return false;
 	}
 
 	memcpy_attrib_t(&attrib, c_attrib, metadata);
 
+	log_info("Finish translating attrib_t");
+
 	// =============================
 	// = Translate vector<shape_t> =
 	// =============================
 
+	log_info("Start translating shape_t[]");
+
 	model->shapes_size = get_as_pointer(shapes.size());
 	size_t shapes_size = *model->shapes_size;
+	log_info_f("Translate %d shape_t objects", shapes_size);
 
 	model->shapes = static_cast<tinyobj_shape_t*>(malloc(sizeof(tinyobj_shape_t) * shapes_size));
 	tinyobj_shape_t* c_shapes = model->shapes;
 
 	if (!c_shapes) {
+		log_error("Error allocating memory for c_shapes");
 		add_error(metadata, "Failed allocating c_shapes");
 		free(c_attrib);
 		return false;
 	}
 
-	for (int sh_i = 0; sh_i < shapes_size; sh_i++)
+	for (int sh_i = 0; sh_i < shapes_size; sh_i++) {
 		memcpy_shape_t(&shapes[sh_i], &c_shapes[sh_i], metadata);
+	}
+
+	log_info("Finish translating shape_t[]");
 
 	// ================================
 	// = Translate vector<material_t> =
 	// ================================
+
+	log_info("Start translating material_t[]");
 
 	model->materials_size = get_as_pointer(materials.size());
 	size_t materials_size = *model->materials_size;
@@ -115,14 +137,18 @@ extern "C" bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata) {
 	tinyobj_material_t* c_materials = model->materials;
 
 	if (!c_materials) {
+		log_error("Error allocating memory for c_materials");
 		add_error(metadata, "Failed allocating c_materials");
 		free(c_attrib);
 		free(c_shapes);
 		return false;
 	}
 
-	for (int sh_i = 0; sh_i < materials_size; sh_i++)
+	for (int sh_i = 0; sh_i < materials_size; sh_i++) {
 		memcpy_material_t(&materials[sh_i], &c_materials[sh_i], metadata);
+	}
+
+	log_info("Finish translating material_t[]");
 
 	return true;
 }
@@ -144,36 +170,52 @@ void memcpy_vector_to_array(
 		return in_val;
 	}
 ) {
-
 	size_t source_size = source.size();
-	Out*   target_vals = static_cast<Out*>(malloc(sizeof(Out) * source_size));
+	*target_size	   = get_as_pointer<>(source_size);
 
-	for (int i = 0; i < source_size; i++) {
-		const In& source_val = source[i];
-		target_vals[i]		 = transformer(source_val);
+	if (source_size == 0) {
+		*target = nullptr;
+		return;
 	}
 
-	*target		 = target_vals;
-	*target_size = get_as_pointer<>(source_size);
+	Out* target_vals = static_cast<Out*>(malloc(sizeof(Out) * source_size));
+
+	if constexpr (std::is_same_v<In, Out>) {
+		std::memcpy(target_vals, source.data(), sizeof(Out) * source_size);
+	} else {
+		for (size_t i = 0; i < source_size; i++) {
+			target_vals[i] = transformer(source[i]);
+		}
+	}
+
+	*target = target_vals;
 }
 
 void memcpy_indices(
-	std::vector<tinyobj::index_t>& indices,
-	tinyobj_index_t**			   c_indices,
-	size_t*						   c_indices_count
+	const std::vector<tinyobj::index_t>& indices,
+	tinyobj_index_t**					 c_indices,
+	size_t**							 c_indices_count
 ) {
+	size_t count	 = indices.size();
+	*c_indices_count = get_as_pointer(count);
 
-	*c_indices_count = indices.size();
+	if (count == 0) {
+		*c_indices = nullptr;
+		return;
+	}
 
-	*c_indices = static_cast<tinyobj_index_t*>(malloc(sizeof(tinyobj_index_t) * *c_indices_count));
+	*c_indices = static_cast<tinyobj_index_t*>(malloc(sizeof(tinyobj_index_t) * count));
 
-	for (int i = 0; i < *c_indices_count; i++) {
+	int* val_pool = static_cast<int*>(malloc(sizeof(int) * count * 3));
 
-		auto [vertex_index, normal_index, texcoord_index] = indices[i];
+	for (size_t i = 0; i < count; i++) {
+		(*c_indices)[i].vertex_index   = &val_pool[i * 3 + 0];
+		(*c_indices)[i].normal_index   = &val_pool[i * 3 + 1];
+		(*c_indices)[i].texcoord_index = &val_pool[i * 3 + 2];
 
-		c_indices[i]->vertex_index	 = get_as_pointer(vertex_index);
-		c_indices[i]->normal_index	 = get_as_pointer(normal_index);
-		c_indices[i]->texcoord_index = get_as_pointer(texcoord_index);
+		*(*c_indices)[i].vertex_index	= indices[i].vertex_index;
+		*(*c_indices)[i].normal_index	= indices[i].normal_index;
+		*(*c_indices)[i].texcoord_index = indices[i].texcoord_index;
 	}
 }
 
@@ -249,7 +291,7 @@ void memcpy_shape_t(tinyobj::shape_t* shape, tinyobj_shape_t* c_shape, ModelMeta
 	c_shape->mesh		   = static_cast<tinyobj_mesh_t*>(malloc(sizeof(tinyobj_mesh_t)));
 	tinyobj_mesh_t* c_mesh = c_shape->mesh;
 
-	memcpy_indices(mesh.indices, &c_mesh->indices, c_mesh->indices_count);
+	memcpy_indices(mesh.indices, &c_mesh->indices, &c_mesh->indices_count);
 
 	// clang-format off
 	memcpy_vector_to_array<>(mesh.num_face_vertices,   &c_mesh->num_face_vertices,   &c_mesh->num_face_vertices_count);
@@ -281,7 +323,7 @@ void memcpy_shape_t(tinyobj::shape_t* shape, tinyobj_shape_t* c_shape, ModelMeta
 	c_shape->lines			 = static_cast<tinyobj_lines_t*>(malloc(sizeof(tinyobj_lines_t)));
 	tinyobj_lines_t* c_lines = c_shape->lines;
 
-	memcpy_indices(lines.indices, &c_lines->indices, c_lines->indices_count);
+	memcpy_indices(lines.indices, &c_lines->indices, &c_lines->indices_count);
 
 	memcpy_vector_to_array<>(
 		lines.num_line_vertices, &c_lines->num_line_vertices, &c_lines->num_line_vertices_count
@@ -292,7 +334,7 @@ void memcpy_shape_t(tinyobj::shape_t* shape, tinyobj_shape_t* c_shape, ModelMeta
 	c_shape->points			   = static_cast<tinyobj_points_t*>(malloc(sizeof(tinyobj_points_t)));
 	tinyobj_points_t* c_points = c_shape->points;
 
-	memcpy_indices(points.indices, &c_points->indices, c_points->indices_count);
+	memcpy_indices(points.indices, &c_points->indices, &c_points->indices_count);
 }
 
 void memcpy_texture_option_t(
@@ -408,11 +450,11 @@ void memcpy_material_t(
 	c_material->normal_texname	  = strdup(material->normal_texname.c_str());
 
 	// clang-format off
-	memcpy_texture_option_t(material->roughness_texopt, c_material->roughness_texopt);
-	memcpy_texture_option_t(material->metallic_texopt,  c_material->metallic_texopt);
-	memcpy_texture_option_t(material->sheen_texopt,     c_material->sheen_texopt);
-	memcpy_texture_option_t(material->emissive_texopt,  c_material->emissive_texopt);
-	memcpy_texture_option_t(material->normal_texopt,    c_material->normal_texopt);
+	memcpy_texture_option_t(material->roughness_texopt, c_material->roughness_texopt, metadata);
+	memcpy_texture_option_t(material->metallic_texopt,  c_material->metallic_texopt,  metadata);
+	memcpy_texture_option_t(material->sheen_texopt,     c_material->sheen_texopt,     metadata);
+	memcpy_texture_option_t(material->emissive_texopt,  c_material->emissive_texopt,  metadata);
+	memcpy_texture_option_t(material->normal_texopt,    c_material->normal_texopt,    metadata);
 	// clang-format on
 
 	/* TODO: Unknown parameters? */

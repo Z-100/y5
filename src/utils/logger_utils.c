@@ -21,34 +21,26 @@ char* get_date_time() {
 	return date_time_str;
 }
 
-void _log(int log_type, char* file, int line, char* message) {
-	_log_f(log_type, file, line, message, nullptr);
+void log_internal(const int log_type, const char* file, const int line, const char* message) {
+	log_internal_f(log_type, file, line, message, nullptr);
 }
 
-void _log_f(int log_type, char* file, int line, char* message, ...) {
+void log_internal_f(const int log_type, const char* file, const int line, const char* message, ...) {
 
 	char* date_time = get_date_time();
 	if (!date_time)
 		date_time = "0000-00-00 00:00:00";
 
 	char* type;
+	// clang-format off
 	switch (log_type) {
-		case LOG_INFO:
-			type = "INFO";
-			break;
-		case LOG_DEBUG:
-			type = "DEBUG";
-			break;
-		case LOG_WARN:
-			type = "WARN";
-			break;
-		case LOG_ERROR:
-			type = "ERROR";
-			break;
-		default:
-			type = "UNKNOWN";
-			break;
+		case LOG_INFO:  type = "INFO";    break;
+		case LOG_DEBUG: type = "DEBUG";   break;
+		case LOG_WARN:  type = "WARN";    break;
+		case LOG_ERROR: type = "ERROR";   break;
+		default:        type = "UNKNOWN"; break;
 	}
+	// clang-format on
 
 	char location[256];
 	snprintf(location, sizeof(location), "%s:%d - ", file ? file : "unknown", line);

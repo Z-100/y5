@@ -51,4 +51,3 @@ void play_sound(ma_sound* sound) {
 	log_info("Play sound");
 	ma_sound_start(sound);
 }
-

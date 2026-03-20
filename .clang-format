@@ -23,6 +23,7 @@ AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
+RemoveBracesLLVM: false
 
 BreakBeforeBraces: Attach
 InsertBraces: true
