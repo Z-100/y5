@@ -25,11 +25,18 @@ void log_internal(const int log_type, const char* file, const int line, const ch
 	log_internal_f(log_type, file, line, message, nullptr);
 }
 
-void log_internal_f(const int log_type, const char* file, const int line, const char* message, ...) {
+void log_internal_f(
+	const int	log_type,
+	const char* file,
+	const int	line,
+	const char* message,
+	...
+) {
 
 	char* date_time = get_date_time();
-	if (!date_time)
+	if (!date_time) {
 		date_time = "0000-00-00 00:00:00";
+	}
 
 	char* type;
 	// clang-format off

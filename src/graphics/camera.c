@@ -10,7 +10,7 @@ void update_camera_vectors(Camera* camera);
 int camera_create_player_camera(Game* game) {
 
 	Camera* player_camera = malloc(sizeof(Camera));
-	game->player_camera = player_camera;
+	game->player_camera	  = player_camera;
 
 	if (!player_camera) {
 		log_error("Failed allocating memory for Camera");
@@ -103,8 +103,9 @@ void camera_process_mouse_movement(float xPos, float yPos, Camera* camera) {
 
 	camera->yaw += xOffset;
 
-	if (fabsf(camera->pitch + yOffset) <= 89.0f)
+	if (fabsf(camera->pitch + yOffset) <= 89.0f) {
 		camera->pitch += yOffset;
+	}
 
 	update_camera_vectors(camera);
 }
@@ -113,10 +114,11 @@ void camera_process_mouse_scroll(float yOffset, Camera* camera) {
 
 	camera->zoom -= yOffset;
 
-	if (camera->zoom < 1.0f)
+	if (camera->zoom < 1.0f) {
 		camera->zoom = 1.0f;
-	else if (camera->zoom > 45.0f)
+	} else if (camera->zoom > 45.0f) {
 		camera->zoom = 45.0f;
+	}
 }
 
 void update_camera_vectors(Camera* camera) {

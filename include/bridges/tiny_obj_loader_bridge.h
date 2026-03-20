@@ -12,7 +12,7 @@ typedef float real_t;
 #endif
 
 #include <stddef.h>
-typedef real_t			   vec3[3];
+typedef real_t vec3[3];
 
 typedef enum {
 	TEXTURE_TYPE_NONE = 0,

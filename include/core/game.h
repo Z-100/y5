@@ -6,7 +6,7 @@ typedef struct Camera	  Camera;
 typedef float			  vec3[3];
 
 typedef struct GuiStats {
-	vec3* speed;
+	vec3*  speed;
 	float* fps;
 } GuiStats;
 

@@ -29,8 +29,9 @@ unsigned int compile_shaders_to_shader_program(struct Array* shadersArray) {
 
 		unsigned int shaderId = compile_shader(shader);
 
-		if (shaderId != 0)
+		if (shaderId != 0) {
 			shader->id = shaderId;
+		}
 	}
 
 	unsigned int shaderProgram = build_shader_program(shaders, shadersArray->length);
@@ -78,8 +79,9 @@ unsigned int build_shader_program(struct Shader* shaders, unsigned int shadersLe
 
 	for (int i = 0; i < shadersLength; i++) {
 		struct Shader* shader = &shaders[i];
-		if (shader->id != 0)
+		if (shader->id != 0) {
 			glAttachShader(shaderProgram, shader->id);
+		}
 	}
 
 	glLinkProgram(shaderProgram);
@@ -92,8 +94,9 @@ unsigned int build_shader_program(struct Shader* shaders, unsigned int shadersLe
 
 	for (int i = 0; i < 2; i++) {
 		struct Shader* shader = &shaders[i];
-		if (shader->id != 0)
+		if (shader->id != 0) {
 			glDeleteShader(shader->id);
+		}
 	}
 
 	return shaderProgram;

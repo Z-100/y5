@@ -35,8 +35,9 @@ ma_sound* load_sound(ma_engine* engine, char* sound_name) {
 	}
 
 	char* sound_path = concat_dir_file("res/audio", sound_name);
-	if (sound_path == nullptr)
+	if (sound_path == nullptr) {
 		return nullptr;
+	}
 
 	ma_result result = ma_sound_init_from_file(engine, sound_path, 0, nullptr, nullptr, sound);
 	if (result != MA_SUCCESS) {

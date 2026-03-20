@@ -34,8 +34,9 @@ ModelObject* load_model(char* directory, char* filename) {
 		return nullptr;
 	}
 
-	if (metadata->warning)
+	if (metadata->warning) {
 		log_error_f("load_obj warning: %s", metadata->warning);
+	}
 
 	// ============================
 	// = OpenGL bus prep for data =
@@ -51,8 +52,9 @@ ModelObject* load_model(char* directory, char* filename) {
 
 		size_t num_faces = *shape->mesh->num_face_vertices_count;
 
-		for (size_t f = 0; f < num_faces; f++)
+		for (size_t f = 0; f < num_faces; f++) {
 			total_indices += shape->mesh->num_face_vertices[f];
+		}
 	}
 
 	const size_t floats_per_vertex = 8;

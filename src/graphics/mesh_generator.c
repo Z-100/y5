@@ -1,7 +1,6 @@
 #include "graphics/mesh_generator.h"
 #include "utils/headers_collection.h"
 
-
 struct FloatArray* generate_vertices(unsigned int width, unsigned int height) {
 
 	if (width <= 1 || height <= 1) {

@@ -1,9 +1,9 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-typedef float vec3[3];
-typedef float vec4[4];
-typedef vec4  mat4[4];
+typedef float		vec3[3];
+typedef float		vec4[4];
+typedef vec4		mat4[4];
 typedef struct Game Game;
 
 enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };

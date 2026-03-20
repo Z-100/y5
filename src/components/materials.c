@@ -17,10 +17,10 @@ Material MATERIAL_EMERALD = {
 };
 // clang-format on
 
-
 Material* materials_default() {
 	return &DEFAULT_MATERIAL;
 }
+
 Material* materials_emerald() {
 	return &MATERIAL_EMERALD;
 }
