@@ -142,9 +142,43 @@ void renderer_game_loop(const Game* game, ModelObject* model) {
 	glBindVertexArray(VAO);
 	for (int i = 0; i < 10; i++) {
 
-		set_uniform_material(
-			&shader_texture, "u_material", i % 3 == 0 ? materials_default() : materials_emerald()
-		);
+		Material* material;
+		switch (i) {
+			case 0:
+				material = materials_default();
+				break;
+			case 1:
+				material = materials_emerald();
+				break;
+			case 2:
+				material = materials_jade();
+				break;
+			case 3:
+				material = materials_ruby();
+				break;
+			case 4:
+				material = materials_bronze();
+				break;
+			case 5:
+				material = materials_chrome();
+				break;
+			case 6:
+				material = materials_black_plastic();
+				break;
+			case 7:
+				material = materials_yellow_plastic();
+				break;
+			case 8:
+				material = materials_cyan_rubber();
+				break;
+			case 9:
+				material = materials_gold();
+				break;
+			default:
+				material = materials_default();
+		}
+
+		set_uniform_material(&shader_texture, "u_material", material);
 
 		mat4 modelMatrix = GLM_MAT4_IDENTITY_INIT;
 		glm_translate(modelMatrix, cubePositions[i]);

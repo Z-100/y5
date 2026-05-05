@@ -6,20 +6,20 @@ ModelObject* load_model(char* directory, char* filename) {
 
 	ModelObject* model = malloc(sizeof(ModelObject));
 	if (!model) {
-		fprintf(stderr, "Failed malloc for building '%s/%s'\n", directory, filename);
+		log_error_f("Failed malloc for building '%s/%s'", directory, filename);
 		return nullptr;
 	}
 
 	ModelMetadata* metadata = malloc(sizeof(ModelMetadata));
 	if (!metadata) {
-		fprintf(stderr, "Failed malloc for building '%s/%s'\n", directory, filename);
+		log_error_f("Failed malloc for building '%s/%s'", directory, filename);
 		return nullptr;
 	}
 
 	size_t len_path	 = strlen(directory) + strlen(filename) + 2;
 	char*  file_path = malloc(len_path);
 	if (!file_path) {
-		fprintf(stderr, "Failed malloc for building '%s/%s'\n", directory, filename);
+		log_error_f("Failed malloc for building '%s/%s'", directory, filename);
 		return nullptr;
 	}
 
@@ -65,7 +65,7 @@ ModelObject* load_model(char* directory, char* filename) {
 	model->index_count	= total_indices;
 
 	if (!model->vertices || !model->indices) {
-		fprintf(stderr, "Failed malloc for flat arrays");
+		log_error("Failed malloc for flat arrays");
 		free(file_path);
 		free(metadata);
 		free(model->vertices);
@@ -131,8 +131,8 @@ ModelObject* load_model(char* directory, char* filename) {
 		}
 	}
 
-	printf(
-		"Loaded %zu vertices (%zu indices)\n", model->vertex_count / floats_per_vertex,
+	log_info_f(
+		"Loaded %zu vertices (%zu indices)", model->vertex_count / floats_per_vertex,
 		model->index_count
 	);
 

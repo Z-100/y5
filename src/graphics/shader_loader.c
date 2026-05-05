@@ -9,7 +9,7 @@ unsigned int build_shader_program(struct Shader* shaders, unsigned int shadersLe
 unsigned int compile_shaders_to_shader_program(struct Array* shadersArray) {
 
 	if (shadersArray == NULL) {
-		fprintf(stderr, "Cannot compile no shaders\n");
+		log_error("No shaders provided");
 		return 0;
 	}
 
@@ -20,9 +20,8 @@ unsigned int compile_shaders_to_shader_program(struct Array* shadersArray) {
 		struct Shader* shader = &shaders[i];
 
 		if (shader->name == NULL || shader->type == 0) {
-			fprintf(
-				stderr, "Cannot compile incomplete shader config!Provided: name:%s, type:%d\n",
-				shader->name, shader->type
+			log_error_f(
+				"Incomplete shader config provided: '%s' (type: %d)", shader->name, shader->type
 			);
 			continue;
 		}
@@ -63,7 +62,7 @@ unsigned int compile_shader(const struct Shader* shader) {
 
 	if (!success) {
 		glGetShaderInfoLog(shaderID, 512, nullptr, logMsg);
-		fprintf(stderr, "Error compiling shader: %s\nDetail: %s\n", shader->name, logMsg);
+		log_error_f("Error compiling shader '%s': %s", shader->name, logMsg);
 		return 0;
 	}
 
@@ -89,7 +88,7 @@ unsigned int build_shader_program(struct Shader* shaders, unsigned int shadersLe
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(shaderProgram, 512, nullptr, logMsg);
-		fprintf(stderr, "Error linking shader: %s\n", logMsg);
+		log_error_f("Error linking shaders: %s", logMsg);
 	}
 
 	for (int i = 0; i < 2; i++) {
@@ -115,7 +114,7 @@ int set_uniform_vec3(const unsigned int* shaderPtr, const char* name, const vec3
 	GLint locationInShader = glGetUniformLocation(*shaderPtr, name);
 
 	if (locationInShader == -1) {
-		fprintf(stderr, "Uniform (vec3) '%s' not found in shader:%d\n", name, *shaderPtr);
+		log_error_f("Uniform (vec3) '%s' not found in shader:%d", name, *shaderPtr);
 		return -1;
 	}
 
@@ -128,7 +127,7 @@ int set_uniform_vec4(const unsigned int* shaderPtr, const char* name, const vec4
 	GLint locationInShader = glGetUniformLocation(*shaderPtr, name);
 
 	if (locationInShader == -1) {
-		fprintf(stderr, "Uniform (vec4) '%s' not found in shader:%d\n", name, *shaderPtr);
+		log_error_f("Uniform (vec4) '%s' not found in shader:%d", name, *shaderPtr);
 		return -1;
 	}
 
@@ -141,7 +140,7 @@ int set_uniform_mat4(const unsigned int* shaderPtr, const char* name, const mat4
 	GLint locationInShader = glGetUniformLocation(*shaderPtr, name);
 
 	if (locationInShader == -1) {
-		fprintf(stderr, "Uniform (mat4) '%s' not found in shader:%d\n", name, *shaderPtr);
+		log_error_f("Uniform (mat4) '%s' not found in shader:%d", name, *shaderPtr);
 		return -1;
 	}
 
@@ -181,9 +180,7 @@ int set_uniform_material(
 	int set_uniform_##C_TYPE(const unsigned int* shaderPtr, const char* name, GL_TYPE value) { \
 		int locationInShader = glGetUniformLocation(*shaderPtr, name); \
 		if (locationInShader == -1) { \
-			fprintf( \
-				stderr, "Uniform (primitive) '%s' not found in shader:%d\n", name, *shaderPtr \
-			); \
+			log_error_f("Uniform (primitive) '%s' not found in shader:%d", name, *shaderPtr); \
 			return -1; \
 		} \
 		GL_UNIFORM_FUN(locationInShader, value); \

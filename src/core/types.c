@@ -47,7 +47,7 @@ struct Array* new_array(void* data, unsigned int dataLength) {
 void fill_array_if_exists(const void* data, unsigned int dataLength, struct Array* dataPointer) {
 
 	if (dataPointer == NULL) {
-		fprintf(stderr, "Array pointer cannot be null\n");
+		log_error("Array pointer cannot be null");
 		return;
 	}
 
@@ -55,7 +55,7 @@ void fill_array_if_exists(const void* data, unsigned int dataLength, struct Arra
 
 	dataPointer->data = malloc(intArrayDataSize);
 	if (dataPointer->data == NULL) {
-		fprintf(stderr, "Failed malloc for array data\n");
+		log_error("Failed malloc for array data");
 		free(dataPointer);
 		return;
 	}

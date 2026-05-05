@@ -2,6 +2,7 @@
 #define HEADERS_COLLECTION_H
 
 #define GLFW_INCLUDE_NONE
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -32,5 +33,6 @@
 #include "utils/logger_utils.h"
 #include "utils/math_utils.h"
 #include "utils/model_loader.h"
+#include "utils/string_utils.h"
 
 #endif

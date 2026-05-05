@@ -1,23 +1,9 @@
 #include "utils/file_reader.h"
 #include "utils/headers_collection.h"
 
-char* concat_dir_file(char* dir, char* file) {
-
-	size_t full_len = strlen(dir) + strlen(file) + 2;
-	char*  path		= malloc(full_len);
-
-	if (!path) {
-		log_error_f("Failed allocating full file name memory for: '%s/&s'", dir, file);
-		return nullptr;
-	}
-
-	snprintf(path, full_len, "%s/%s", dir, file);
-
-	return path;
-}
-
 char* read_lines_dir_name(char* directory, char* fileName) {
-	return read_lines_path(concat_dir_file(directory, fileName));
+	char* file_path = concat_dir_file(directory, fileName);
+	return read_lines_path(file_path);
 }
 
 char* read_lines_path(char* filePath) {

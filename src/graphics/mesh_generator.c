@@ -4,7 +4,7 @@
 struct FloatArray* generate_vertices(unsigned int width, unsigned int height) {
 
 	if (width <= 1 || height <= 1) {
-		fprintf(stderr, "Cannot create (w:%d/h:%d) vertices - min is (w:2/h:2)\n", width, height);
+		log_error_f("Cannot create (w:%d/h:%d) vertices - min is (w:2/h:2)", width, height);
 		return nullptr;
 	}
 
@@ -41,7 +41,7 @@ struct FloatArray* generate_vertices(unsigned int width, unsigned int height) {
 struct IntArray* generate_indices(unsigned int width, unsigned int height) {
 
 	if (width <= 1 || height <= 1) {
-		fprintf(stderr, "Cannot create (w:%d/h:%d) indices - min is (w:2/h:2)\n", width, height);
+		log_error_f("Cannot create (w:%d/h:%d) indices - min is (w:2/h:2)", width, height);
 		return nullptr;
 	}
 
@@ -70,7 +70,7 @@ struct IntArray* generate_indices(unsigned int width, unsigned int height) {
 struct IntArray* generate_indices2(unsigned int width, unsigned int height) {
 
 	if (width == 0 || height == 0) {
-		fprintf(stderr, "Cannot create 0 indices");
+		log_error("Cannot create 0 indices");
 		return nullptr;
 	}
 
