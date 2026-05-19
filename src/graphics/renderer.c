@@ -1,26 +1,12 @@
 #include "graphics/renderer.h"
-
-#include "bridges/tiny_obj_loader_bridge.h" // TODO: Remove
 #include "utils/headers_collection.h"
 
-// ============================
-// = TODO: Manage differently =
-// ============================
+static void
+_initialize_object(ModelObject* model, unsigned int* vbo, unsigned int* vao, unsigned int* ebo);
+
+static void _initialize_texture(char* texture_path, unsigned int* texture);
 
 // clang-format off
-vec3 cubePositions[] = {
-	{ 0.0f, 0.0f, 0.0f },
-	{ 2.0f, 5.0f, -15.0f },
-	{ -1.5f, -2.2f, -2.5f },
-	{ -3.8f, -2.0f, -12.3f },
-	{ 2.4f, -0.4f, -3.5f },
-	{ -1.7f, 3.0f, -7.5f },
-	{ 1.3f, -2.0f, -2.5f },
-	{ 1.5f, 2.0f, -2.5f },
-	{ 1.5f, 0.2f, -1.5f },
-	{ -1.3f, 1.0f, -1.5f },
-};
-
 Light light = {
 	.position = { 0.0f, 5.0f, 0.0f },
 	.ambient =  { 0.8f, 0.8f, 0.8f },
@@ -29,17 +15,47 @@ Light light = {
 };
 // clang-format on
 
-unsigned int VBO, VAO, EBO, indicesSize, texture1, texture2, lightCubeVAO;
+unsigned int indicesSize, texture1, texture2;
 unsigned int shader_texture, shader_light_source;
 
 constexpr int WIDTH	 = 1280;
 constexpr int HEIGHT = 720;
 
+GLuint* vertex_buffer_objects;
+uint8_t num_vbos = 0;
+
+GLuint* vertex_array_objects;
+uint8_t num_vaos = 0;
+
+GLuint* entity_buffer_objects;
+uint8_t num_ebos = 0;
+
+GLuint* textures;
+uint8_t textures_counter = 0;
+
+// TODO: Make better
+ModelObject** models;
+int			  models_counter = 0;
+
 // ============================
-// = TODO: Manage differently =
+// = Renderer Base Actions    =
 // ============================
 
-void renderer_init_default(const Game* game) {
+void renderer_init(const Game* game) {
+
+	vertex_buffer_objects = malloc(sizeof(GLuint) * 100);
+	vertex_array_objects  = malloc(sizeof(GLuint) * 100);
+	entity_buffer_objects = malloc(sizeof(GLuint) * 100);
+
+	textures = malloc(sizeof(GLuint) * 100);
+	models	 = malloc(sizeof(ModelObject*) * 100);
+
+	if (!vertex_buffer_objects || !vertex_array_objects || !entity_buffer_objects || !textures ||
+		!models) {
+		log_error("Failed allocating render arrays!");
+		return;
+	}
+
 	glfwSwapInterval(1); // le vsync
 	glEnable(GL_DEPTH_TEST);
 }
@@ -50,16 +66,42 @@ void renderer_update(const Game* game) {
 }
 
 void renderer_destroy() {
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+
+	for (int i = 0; i < num_vbos; i++) {
+		glDeleteVertexArrays(1, &vertex_array_objects[i]);
+	}
+
+	for (int i = 0; i < num_vbos; i++) {
+		glDeleteBuffers(1, &vertex_buffer_objects[i]);
+	}
+
 	glDeleteProgram(shader_texture);
+
+	free(vertex_buffer_objects);
+	free(vertex_array_objects);
+	free(entity_buffer_objects);
+
+	free(textures);
+	free(models);
 }
 
 // ============================
-// = TODO: Manage differently =
+// = Renderer Loading         =
 // ============================
 
-void renderer_initialize_cubes(ModelObject* model_object) {
+void renderer_init_model(ModelObject* model) {
+
+	models[models_counter++] = model;
+
+	GLuint vbo, vao, ebo;
+	_initialize_object(model, &vbo, &vao, &ebo);
+
+	vertex_buffer_objects[num_vbos++] = vbo;
+	vertex_array_objects[num_vaos++]  = vao;
+	entity_buffer_objects[num_ebos++] = ebo;
+}
+
+void renderer_init_shaders() {
 
 	struct Shader shaders_texture[] = {
 		{ .name = VERTEX_SHADER_TEXTURES, .type = GL_VERTEX_SHADER },
@@ -74,37 +116,24 @@ void renderer_initialize_cubes(ModelObject* model_object) {
 	shader_texture		= compile_shaders_to_shader_program(new_array(shaders_texture, 2));
 	shader_light_source = compile_shaders_to_shader_program(new_array(shaders_light_source, 2));
 
-	elmo_vbo_vao_ebo(model_object, &VBO, &VAO, &EBO, &indicesSize, &texture1, &texture2);
+	GLuint texture = textures[textures_counter++];
+	texture		   = 0;
+	_initialize_texture("res/textures/elmo.png", &texture);
+
+	texture = textures[textures_counter++];
+	texture = 0;
+	_initialize_texture("res/textures/obama.png", &texture);
 
 	use_shader(&shader_texture);
 	set_uniform_int(&shader_texture, "u_elmoTexture", 0);
 	set_uniform_int(&shader_texture, "u_obamaTexture", 1);
-
-	glGenVertexArrays(1, &lightCubeVAO);
-	glBindVertexArray(lightCubeVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	// Updated stride: 8 floats per-vertex: pos(3), tex(2), normal(3)
-	const GLsizei stride = 8 * sizeof(real_t);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) 0);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(real_t)));
-	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*) (5 * sizeof(real_t)));
-	glEnableVertexAttribArray(2);
-
-	// glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 *
-	// sizeof(float))); glEnableVertexAttribArray(1);
-	//
-	// glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (5 *
-	// sizeof(float))); glEnableVertexAttribArray(1);
 }
 
-void renderer_game_loop(const Game* game, ModelObject* model) {
+// ============================
+// = Renderer Game Loop       =
+// ============================
+
+void renderer_game_loop(const Game* game) {
 
 	Camera* player_camera = game->player_camera;
 
@@ -115,10 +144,10 @@ void renderer_game_loop(const Game* game, ModelObject* model) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture1);
+	glBindTexture(GL_TEXTURE_2D, textures[0]);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texture2);
+	glBindTexture(GL_TEXTURE_2D, textures[1]);
 
 	use_shader(&shader_texture);
 	set_uniform_vec3(&shader_texture, "u_viewPos", &player_camera->position);
@@ -139,55 +168,22 @@ void renderer_game_loop(const Game* game, ModelObject* model) {
 	camera_get_view_matrix(player_camera, &viewTransform);
 	set_uniform_mat4(&shader_texture, "u_viewTransform", &viewTransform);
 
-	glBindVertexArray(VAO);
-	for (int i = 0; i < 10; i++) {
+	Material* material = materials_default();
+	set_uniform_material(&shader_texture, "u_material", material);
 
-		Material* material;
-		switch (i) {
-			case 0:
-				material = materials_default();
-				break;
-			case 1:
-				material = materials_emerald();
-				break;
-			case 2:
-				material = materials_jade();
-				break;
-			case 3:
-				material = materials_ruby();
-				break;
-			case 4:
-				material = materials_bronze();
-				break;
-			case 5:
-				material = materials_chrome();
-				break;
-			case 6:
-				material = materials_black_plastic();
-				break;
-			case 7:
-				material = materials_yellow_plastic();
-				break;
-			case 8:
-				material = materials_cyan_rubber();
-				break;
-			case 9:
-				material = materials_gold();
-				break;
-			default:
-				material = materials_default();
-		}
-
-		set_uniform_material(&shader_texture, "u_material", material);
+	for (int i = 0; i < num_vaos; i++) {
 
 		mat4 modelMatrix = GLM_MAT4_IDENTITY_INIT;
-		glm_translate(modelMatrix, cubePositions[i]);
 
 		float angle = 20.0f * (float) i;
 		glm_rotate(modelMatrix, glm_rad(game_last_frame() * angle), (vec3) { 1.0f, 0.3f, 0.5f });
 
 		set_uniform_mat4(&shader_texture, "u_modelTransform", &modelMatrix);
 
+		ModelObject* model = models[i];
+
+		glBindVertexArray(vertex_array_objects[i]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, entity_buffer_objects[i]);
 		glDrawElements(GL_TRIANGLES, model->index_count, GL_UNSIGNED_INT, nullptr);
 	}
 
@@ -202,109 +198,78 @@ void renderer_game_loop(const Game* game, ModelObject* model) {
 
 	set_uniform_mat4(&shader_light_source, "u_modelTransform", &modelTransform);
 
-	glBindVertexArray(lightCubeVAO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glDrawElements(GL_TRIANGLES, model->index_count, GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(vertex_array_objects[1]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, entity_buffer_objects[1]);
+	glDrawElements(GL_TRIANGLES, models[1]->index_count, GL_UNSIGNED_INT, nullptr);
 }
 
-int elmo_vbo_vao_ebo(
-	ModelObject*  model,
-	unsigned int* vertexBuffer,
-	unsigned int* vertexArray,
-	unsigned int* elementBuffer,
-	unsigned int* trianglesSize,
-	unsigned int* texture1,
-	unsigned int* texture2
-) {
+// ============================
+// = Renderer Internal Func   =
+// ============================
 
-	glGenVertexArrays(1, vertexArray);
-	glGenBuffers(1, vertexBuffer);
-	glGenBuffers(1, elementBuffer);
+static void
+_initialize_object(ModelObject* model, unsigned int* vbo, unsigned int* vao, unsigned int* ebo) {
 
-	glBindVertexArray(*vertexArray);
+	glGenVertexArrays(1, vao);
+	glGenBuffers(1, vbo);
+	glGenBuffers(1, ebo);
 
-	glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
+	glBindVertexArray(*vao);
+
 	// model->vertex_count is the number of floats now
+	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 	glBufferData(
 		GL_ARRAY_BUFFER, sizeof(real_t) * model->vertex_count, model->vertices, GL_STATIC_DRAW
 	);
 
 	// Upload index data
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *elementBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ebo);
 	glBufferData(
 		GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * model->index_count, model->indices,
 		GL_STATIC_DRAW
 	);
 
 	// Updated stride: 8 floats per-vertex: pos(3), tex(2), normal(3)
-	const GLsizei stride = 8 * sizeof(real_t);
+	constexpr GLsizei stride = 8 * sizeof(real_t);
 
+	// pos (x, y, z)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) 0);
 	glEnableVertexAttribArray(0);
 
+	// tex (x, y)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(real_t)));
 	glEnableVertexAttribArray(1);
 
+	// norm (x, y, z)
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*) (5 * sizeof(real_t)));
 	glEnableVertexAttribArray(2);
-
-	// glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 *
-	// sizeof(float))); glEnableVertexAttribArray(1);
-	//
-	// glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (5 *
-	// sizeof(float))); glEnableVertexAttribArray(2);
-
-	glGenTextures(1, texture1);
-	glBindTexture(GL_TEXTURE_2D, *texture1);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	unsigned char* imageData1 = nullptr;
-	unsigned	   width1, height1;
-
-	unsigned error1 =
-		lodepng_decode32_file(&imageData1, &width1, &height1, "res/textures/elmo.png");
-
-	if (error1) {
-		log_error_f("Error loading image (elmo): %d: %s", error1, lodepng_error_text(error1));
-		return -1;
-	}
-
-	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGBA, width1, height1, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData1
-	);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	glGenTextures(1, texture2);
-	glBindTexture(GL_TEXTURE_2D, *texture2);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	unsigned char* imageData2 = nullptr;
-	unsigned	   width2, height2;
-
-	unsigned error2 =
-		lodepng_decode32_file(&imageData2, &width2, &height2, "res/textures/obama.png");
-
-	if (error2) {
-		log_error_f("Error loading image (obama): %d: %s", error1, lodepng_error_text(error1));
-		return -1;
-	}
-
-	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGBA, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData2
-	);
-	glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-// ============================
-// = TODO: Manage differently =
-// ============================
+static void _initialize_texture(char* texture_path, unsigned int* texture) {
+
+	unsigned char* image_data = nullptr;
+	unsigned	   width, height;
+
+	unsigned error = lodepng_decode32_file(&image_data, &width, &height, texture_path);
+	if (error) {
+		log_error_f(
+			"Error loading image (%s): %d: %s", texture_path, error, lodepng_error_text(error)
+		);
+		return;
+	}
+
+	glGenTextures(1, texture);
+	glBindTexture(GL_TEXTURE_2D, *texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data
+	);
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+}

@@ -192,6 +192,8 @@ typedef struct {
 	size_t*				   skin_weights_count;
 } tinyobj_attrib_t;
 
+typedef struct Material Material;
+
 typedef struct ModelObject {
 	tinyobj_attrib_t* attrib;
 
@@ -201,12 +203,15 @@ typedef struct ModelObject {
 	tinyobj_material_t* materials;
 	size_t*				materials_size;
 
-	// TODO: Remooooove
-	//  TINYOBJLOADER JUST AS BAD AS IMGUI OMGGGG
-	float*		  vertices;
-	size_t		  vertex_count;
+	float* vertices;
+	size_t vertex_count;
+
 	unsigned int* indices;
 	size_t		  index_count;
+
+	// TODO: Remove
+	char*	  texture_path;
+	Material* material;
 
 } ModelObject;
 

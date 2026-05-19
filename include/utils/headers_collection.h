@@ -14,6 +14,8 @@
 #include <lodepng.h>
 #include <miniaudio.h>
 
+#include "bridges/tiny_obj_loader_bridge.h"
+
 #include "components/materials.h"
 
 #include "core/callbacks.h"

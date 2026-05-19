@@ -34,11 +34,18 @@ int main() {
 	ma_sound* wololo = load_sound(sound_engine, "wololo.mp3");
 	play_sound(wololo);
 
-	renderer_init_default(game);
+	renderer_init(game);
+	renderer_init_shaders();
 
-	// TODO: Remove from here
-	ModelObject* model = load_model("res/models", "monkey.obj");
-	renderer_initialize_cubes(model);
+	// TODO: Cat breaks engine
+	// ModelObject* cat = load_model("res/models", "cat.obj");
+	// renderer_init_model(cat);
+
+	ModelObject* monkey = load_model("res/models", "monkey.obj");
+	renderer_init_model(monkey);
+
+	ModelObject* light_cube = load_model("res/models", "cube.obj");
+	renderer_init_model(light_cube);
 
 	while (game_is_running(game)) {
 
@@ -47,7 +54,7 @@ int main() {
 
 		gui_update_imgui();
 
-		renderer_game_loop(game, model);
+		renderer_game_loop(game);
 
 		gui_render_imgui();
 

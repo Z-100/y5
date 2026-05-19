@@ -33,12 +33,7 @@ unsigned int compile_shaders_to_shader_program(struct Array* shadersArray) {
 		}
 	}
 
-	unsigned int shaderProgram = build_shader_program(shaders, shadersArray->length);
-
-	// TODO: Might need this to clear from heap and not stack
-	// free_array(shadersArray);
-
-	return shaderProgram;
+	return build_shader_program(shaders, shadersArray->length);
 }
 
 // ================

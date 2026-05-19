@@ -4,6 +4,8 @@
 
 ModelObject* load_model(char* directory, char* filename) {
 
+	log_info_f("Loading model '%s'", filename);
+
 	ModelObject* model = malloc(sizeof(ModelObject));
 	if (!model) {
 		log_error_f("Failed malloc for building '%s/%s'", directory, filename);
@@ -78,11 +80,13 @@ ModelObject* load_model(char* directory, char* filename) {
 	size_t index_i	= 0;
 
 	for (size_t s = 0; s < *model->shapes_size; s++) {
+
 		tinyobj_shape_t* shape		  = &model->shapes[s];
 		size_t			 num_faces	  = *shape->mesh->num_face_vertices_count;
 		size_t			 index_offset = 0;
 
 		for (size_t f = 0; f < num_faces; f++) {
+
 			unsigned int vertices_in_face = shape->mesh->num_face_vertices[f];
 
 			for (unsigned int v = 0; v < vertices_in_face; v++) {
