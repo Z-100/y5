@@ -9,6 +9,6 @@ bool gui_init_imgui(const Game* game);
 
 void gui_terminate_imgui();
 void gui_render_imgui();
-void gui_update_imgui();
+void gui_update_imgui(const Game* game);
 
 #endif

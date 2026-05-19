@@ -9,16 +9,20 @@
 
 #include "utils/headers_collection.h"
 
-ImGuiContext* imgui_context;
-ImGuiIO*	  imgui_io;
+static ImGuiContext* imgui_context;
+static ImGuiIO*		 imgui_io;
 
-void draw_fps_counter();
+static void draw_prod_info();
+static void draw_game_info(const Game* game);
 
 float gui_main_scale() {
-	return cimGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
+	GLFWmonitor* glfw_monitor = glfwGetPrimaryMonitor();
+	return cimGui_ImplGlfw_GetContentScaleForMonitor(glfw_monitor);
 }
 
 bool gui_init_imgui(const Game* game) {
+
+	log_info("Start initializing imgui");
 
 	igCreateContext(nullptr);
 
@@ -47,41 +51,64 @@ bool gui_init_imgui(const Game* game) {
 	ImGuiStyle_ScaleAllSizes(style, main_scale);
 	style->FontScaleDpi = main_scale;
 
+	log_info("Finish initializing imgui");
 	return true;
 }
 
 void gui_terminate_imgui() {
+
+	log_info("Start terminating imgui");
+
 	cimgui_ImplOpenGL3_Shutdown();
 	cimgui_ImplGlfw_Shutdown();
+
 	igDestroyContext(nullptr);
+
+	log_info("Finish terminating imgui");
 }
 
-void gui_update_imgui() {
+void gui_update_imgui(const Game* game) {
+
 	cimgui_ImplOpenGL3_NewFrame();
 	cimgui_ImplGlfw_NewFrame();
+
 	igNewFrame();
 
-	// This'll stay for PROD
-	igBegin("Fuck yeah", nullptr, 0);
-	igText("Fuck you imgui :3");
-
-	draw_fps_counter();
+	draw_prod_info();
+	draw_game_info(game);
 
 	igEnd();
 }
 
 void gui_render_imgui() {
+
 	igRender();
-	cimgui_ImplOpenGL3_RenderDrawData(igGetDrawData());
+
+	ImDrawData* draw_data = igGetDrawData();
+	cimgui_ImplOpenGL3_RenderDrawData(draw_data);
 }
 
-void draw_fps_counter() {
+static void draw_prod_info() {
+
+	ImVec2 pos = { 1280.0f, 0.0f };
+	igSetNextWindowPos(pos, ImGuiCond_Always, (ImVec2) { 0, 0 });
+
+	// This'll stay for PROD
+	igBegin("Fuck yeah", nullptr, 0);
+	igText("Fuck you imgui :3");
+}
+
+static void draw_game_info(const Game* game) {
 
 	ImVec2 pos = { 0.0f, 0.0f };
 	igSetNextWindowPos(pos, ImGuiCond_Always, (ImVec2) { 0, 0 });
 
 	igBegin("Perförmance", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 	igText("FPS: %.1f", imgui_io->Framerate);
-	igText("FPS Time: %.3f ms", 1000.0f / imgui_io->Framerate);
+	igText("TPF: %.3f ms", 1000.0f / imgui_io->Framerate);
+
+	float* position = game->player_camera->position;
+	igText("XYZ: [ %.3f, %.3f, %.3f ]", position[0], position[1], position[2]);
+
 	igEnd();
 }

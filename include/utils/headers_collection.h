@@ -20,6 +20,7 @@
 
 #include "core/callbacks.h"
 #include "core/game.h"
+#include "core/hash_map.h"
 #include "core/types.h"
 #include "core/window_manager.h"
 
