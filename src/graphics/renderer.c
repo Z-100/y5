@@ -1,8 +1,7 @@
 #include "graphics/renderer.h"
 #include "utils/headers_collection.h"
 
-static void
-_initialize_object(ModelObject* model, unsigned int* vbo, unsigned int* vao, unsigned int* ebo);
+static void _initialize_object(ModelObject* model, component_renderer_t* renderer);
 
 static void _initialize_texture(char* texture_path, unsigned int* texture);
 
@@ -15,27 +14,20 @@ Light light = {
 };
 // clang-format on
 
-unsigned int indicesSize, texture1, texture2;
-unsigned int shader_texture, shader_light_source;
+static unsigned int shader_texture, shader_light_source;
 
 constexpr int WIDTH	 = 1280;
 constexpr int HEIGHT = 720;
 
-GLuint* vertex_buffer_objects;
-uint8_t num_vbos = 0;
+static GLuint* textures;
+static uint8_t textures_counter = 0;
 
-GLuint* vertex_array_objects;
-uint8_t num_vaos = 0;
-
-GLuint* entity_buffer_objects;
-uint8_t num_ebos = 0;
-
-GLuint* textures;
-uint8_t textures_counter = 0;
+static component_renderer_t** render_components;
+static uint8_t				  num_render_components = 0;
 
 // TODO: Make better
-ModelObject** models;
-int			  models_counter = 0;
+static ModelObject** models;
+static int			 models_counter = 0;
 
 // ============================
 // = Renderer Base Actions    =
@@ -43,16 +35,13 @@ int			  models_counter = 0;
 
 void renderer_init(const Game* game) {
 
-	vertex_buffer_objects = malloc(sizeof(GLuint) * 100);
-	vertex_array_objects  = malloc(sizeof(GLuint) * 100);
-	entity_buffer_objects = malloc(sizeof(GLuint) * 100);
-
 	textures = malloc(sizeof(GLuint) * 100);
 	models	 = malloc(sizeof(ModelObject*) * 100);
 
-	if (!vertex_buffer_objects || !vertex_array_objects || !entity_buffer_objects || !textures ||
-		!models) {
-		log_error("Failed allocating render arrays!");
+	render_components = malloc(sizeof(component_renderer_t*) * 100);
+
+	if (!textures || !models || !render_components) {
+		log_error("Failed allocating renderer arrays!");
 		return;
 	}
 
@@ -67,20 +56,16 @@ void renderer_update(const Game* game) {
 
 void renderer_destroy() {
 
-	for (int i = 0; i < num_vbos; i++) {
-		glDeleteVertexArrays(1, &vertex_array_objects[i]);
-	}
-
-	for (int i = 0; i < num_vbos; i++) {
-		glDeleteBuffers(1, &vertex_buffer_objects[i]);
+	for (int i = 0; i < num_render_components; i++) {
+		component_renderer_t* component = render_components[i];
+		glDeleteVertexArrays(1, &component->vao);
+		glDeleteBuffers(1, &component->vbo);
+		free(component);
 	}
 
 	glDeleteProgram(shader_texture);
 
-	free(vertex_buffer_objects);
-	free(vertex_array_objects);
-	free(entity_buffer_objects);
-
+	free(render_components);
 	free(textures);
 	free(models);
 }
@@ -93,12 +78,12 @@ void renderer_init_model(ModelObject* model) {
 
 	models[models_counter++] = model;
 
-	GLuint vbo, vao, ebo;
-	_initialize_object(model, &vbo, &vao, &ebo);
+	component_renderer_t* renderer = malloc(sizeof(component_renderer_t));
+	renderer->material			   = materials_black_rubber();
 
-	vertex_buffer_objects[num_vbos++] = vbo;
-	vertex_array_objects[num_vaos++]  = vao;
-	entity_buffer_objects[num_ebos++] = ebo;
+	_initialize_object(model, renderer);
+
+	render_components[num_render_components++] = renderer;
 }
 
 void renderer_init_shaders() {
@@ -168,10 +153,10 @@ void renderer_game_loop(const Game* game) {
 	camera_get_view_matrix(player_camera, &viewTransform);
 	set_uniform_mat4(&shader_texture, "u_viewTransform", &viewTransform);
 
-	Material* material = materials_default();
-	set_uniform_material(&shader_texture, "u_material", material);
+	for (int i = 0; i < num_render_components; i++) {
 
-	for (int i = 0; i < num_vaos; i++) {
+		Material* material = render_components[i]->material;
+		set_uniform_material(&shader_texture, "u_material", material);
 
 		mat4 modelMatrix = GLM_MAT4_IDENTITY_INIT;
 
@@ -182,8 +167,8 @@ void renderer_game_loop(const Game* game) {
 
 		ModelObject* model = models[i];
 
-		glBindVertexArray(vertex_array_objects[i]);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, entity_buffer_objects[i]);
+		glBindVertexArray(render_components[i]->vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, render_components[i]->ebo);
 		glDrawElements(GL_TRIANGLES, model->index_count, GL_UNSIGNED_INT, nullptr);
 	}
 
@@ -198,8 +183,8 @@ void renderer_game_loop(const Game* game) {
 
 	set_uniform_mat4(&shader_light_source, "u_modelTransform", &modelTransform);
 
-	glBindVertexArray(vertex_array_objects[1]);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, entity_buffer_objects[1]);
+	glBindVertexArray(render_components[1]->vao);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, render_components[1]->ebo);
 	glDrawElements(GL_TRIANGLES, models[1]->index_count, GL_UNSIGNED_INT, nullptr);
 }
 
@@ -207,8 +192,11 @@ void renderer_game_loop(const Game* game) {
 // = Renderer Internal Func   =
 // ============================
 
-static void
-_initialize_object(ModelObject* model, unsigned int* vbo, unsigned int* vao, unsigned int* ebo) {
+static void _initialize_object(ModelObject* model, component_renderer_t* renderer) {
+
+	GLuint* vbo = &renderer->vbo;
+	GLuint* vao = &renderer->vao;
+	GLuint* ebo = &renderer->ebo;
 
 	glGenVertexArrays(1, vao);
 	glGenBuffers(1, vbo);

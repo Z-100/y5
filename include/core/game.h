@@ -12,7 +12,7 @@ typedef struct Game {
 
 	float main_scale;
 	float delta_time;
-	bool mouse_locked;
+	bool  mouse_locked;
 
 	bool running;
 } Game;
@@ -20,9 +20,9 @@ typedef struct Game {
 bool  game_init();
 Game* game_get_game();
 
-void game_update(Game* game);
+void game_update();
 
-int	  game_is_running(const Game* game);
+int	  game_is_running();
 float game_last_frame();
 
 #endif

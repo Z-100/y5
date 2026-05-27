@@ -47,12 +47,12 @@ int main() {
 	ModelObject* light_cube = load_model("res/models", "cube.obj");
 	renderer_init_model(light_cube);
 
-	while (game_is_running(game)) {
+	while (game_is_running()) {
 
-		game_update(game);
+		game_update();
 		process_inputs(game);
 
-		gui_update_imgui();
+		gui_update_imgui(game);
 
 		renderer_game_loop(game);
 

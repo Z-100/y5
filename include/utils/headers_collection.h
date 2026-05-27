@@ -24,6 +24,8 @@
 #include "core/types.h"
 #include "core/window_manager.h"
 
+#include "ecs/component.h"
+
 #include "graphics/camera.h"
 #include "graphics/mesh_generator.h"
 #include "graphics/renderer.h"
