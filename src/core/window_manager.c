@@ -33,6 +33,8 @@ bool window_manager_create_main(Game* game) {
 
 	glfwMakeContextCurrent(main_window);
 
+	// Start in camera mode
+	game->mouse_locked = true;
 	glfwSetInputMode(main_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glfwSetFramebufferSizeCallback(main_window, framebuffer_size_callback);

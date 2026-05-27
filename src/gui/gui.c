@@ -14,6 +14,7 @@ static ImGuiIO*		 imgui_io;
 
 static void draw_prod_info();
 static void draw_game_info(const Game* game);
+static void draw_game_spawner(const Game* game);
 
 float gui_main_scale() {
 	GLFWmonitor* glfw_monitor = glfwGetPrimaryMonitor();
@@ -76,6 +77,7 @@ void gui_update_imgui(const Game* game) {
 
 	draw_prod_info();
 	draw_game_info(game);
+	draw_game_spawner(game);
 
 	igEnd();
 }
@@ -109,6 +111,33 @@ static void draw_game_info(const Game* game) {
 
 	float* position = game->player_camera->position;
 	igText("XYZ: [ %.3f, %.3f, %.3f ]", position[0], position[1], position[2]);
+
+	igText("Mouse lock: %d", game->mouse_locked);
+
+	igEnd();
+}
+
+static int selected_index = -1;
+
+static void draw_game_spawner(const Game* game) {
+
+	ImVec2 pos = { 0.0f, 500.0f };
+	igSetNextWindowPos(pos, ImGuiCond_Always, (ImVec2) { 0, 0 });
+
+	igBegin("Spawner", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+	const char* elements[] = { "Monkey", "Cube" };
+
+	ImVec2 size = { 0.0f, 0.0f };
+
+	char title[50];
+	sprintf(title, "Selected Object: %d", selected_index);
+
+	igCombo_Str_arr(title, &selected_index, elements, 2, 5);
+
+	if (igButton("Spawn object", size)) {
+		log_info_f("Spawning: %s", selected_index != -1 ? elements[selected_index] : "Nothing");
+	}
 
 	igEnd();
 }

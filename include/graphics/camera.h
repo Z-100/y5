@@ -27,6 +27,9 @@ typedef struct Camera {
 	float move_speed;
 	float look_sensitivity;
 	float zoom;
+
+	float last_x;
+	float last_y;
 } Camera;
 
 int	 camera_create_player_camera(Game* game);

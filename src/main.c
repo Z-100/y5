@@ -77,7 +77,16 @@ void process_inputs(Game* game) {
 	// ---------------
 
 	if (glfwGetKey(main_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		glfwSetWindowShouldClose(main_window, true);
+
+		game->mouse_locked = !game->mouse_locked;
+
+		// clang-format off
+		int cursor_mode = game->mouse_locked ?
+				GLFW_CURSOR_DISABLED : // Camera mode
+				GLFW_CURSOR_NORMAL;    // UI mode
+		// clang-format on
+
+		glfwSetInputMode(main_window, GLFW_CURSOR, cursor_mode);
 	}
 
 	// ----------------

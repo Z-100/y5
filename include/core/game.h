@@ -12,6 +12,7 @@ typedef struct Game {
 
 	float main_scale;
 	float delta_time;
+	bool mouse_locked;
 
 	bool running;
 } Game;
