@@ -25,6 +25,12 @@
 #include "core/window_manager.h"
 
 #include "ecs/component.h"
+#include "ecs/ecs_engine.h"
+#include "ecs/spawner.h"
+#include "ecs/components/comp_render.h"
+#include "ecs/components/comp_transform.h"
+#include "ecs/systems/sys_render.h"
+#include "ecs/systems/sys_physics.h"
 
 #include "graphics/camera.h"
 #include "graphics/mesh_generator.h"

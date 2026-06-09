@@ -8,7 +8,7 @@ typedef struct Material {
 	vec3  diffuse;
 	vec3  specular;
 	float shininess;
-} Material;
+} material_t;
 
 // TODO: Move?
 typedef struct Light {

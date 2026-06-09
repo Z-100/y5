@@ -120,64 +120,64 @@ void renderer_init_shaders() {
 
 void renderer_game_loop(const Game* game) {
 
-	Camera* player_camera = game->player_camera;
+	// Camera* player_camera = game->player_camera;
+	//
+	// light.position[0] = 7.5f * sinf(game_last_frame());
+	// light.position[2] = 7.5f * cosf(game_last_frame());
+	//
+	// glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//
+	// glActiveTexture(GL_TEXTURE0);
+	// glBindTexture(GL_TEXTURE_2D, textures[0]);
+	//
+	// glActiveTexture(GL_TEXTURE1);
+	// glBindTexture(GL_TEXTURE_2D, textures[1]);
+	//
+	// use_shader(&shader_texture);
+	// set_uniform_vec3(&shader_texture, "u_viewPos", &player_camera->position);
+	//
+	// set_uniform_vec3(&shader_texture, "u_light.position", &light.position);
+	// set_uniform_vec3(&shader_texture, "u_light.ambient", &light.ambient);
+	// set_uniform_vec3(&shader_texture, "u_light.diffuse", &light.diffuse);
+	// set_uniform_vec3(&shader_texture, "u_light.specular", &light.specular);
+	//
+	// mat4 projectionTransform = GLM_MAT4_IDENTITY_INIT;
+	// glm_perspective(
+	// 	glm_rad(player_camera->zoom), (float) WIDTH / (float) HEIGHT, 0.1f, 100.0f,
+	// 	projectionTransform
+	// );
+	// set_uniform_mat4(&shader_texture, "u_projectionTransform", &projectionTransform);
+	//
+	// mat4 viewTransform = GLM_MAT4_IDENTITY_INIT;
+	// camera_get_view_matrix(player_camera, &viewTransform);
+	// set_uniform_mat4(&shader_texture, "u_viewTransform", &viewTransform);
 
-	light.position[0] = 7.5f * sinf(game_last_frame());
-	light.position[2] = 7.5f * cosf(game_last_frame());
-
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textures[0]);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-	use_shader(&shader_texture);
-	set_uniform_vec3(&shader_texture, "u_viewPos", &player_camera->position);
-
-	set_uniform_vec3(&shader_texture, "u_light.position", &light.position);
-	set_uniform_vec3(&shader_texture, "u_light.ambient", &light.ambient);
-	set_uniform_vec3(&shader_texture, "u_light.diffuse", &light.diffuse);
-	set_uniform_vec3(&shader_texture, "u_light.specular", &light.specular);
-
-	mat4 projectionTransform = GLM_MAT4_IDENTITY_INIT;
-	glm_perspective(
-		glm_rad(player_camera->zoom), (float) WIDTH / (float) HEIGHT, 0.1f, 100.0f,
-		projectionTransform
-	);
-	set_uniform_mat4(&shader_texture, "u_projectionTransform", &projectionTransform);
-
-	mat4 viewTransform = GLM_MAT4_IDENTITY_INIT;
-	camera_get_view_matrix(player_camera, &viewTransform);
-	set_uniform_mat4(&shader_texture, "u_viewTransform", &viewTransform);
-
-	for (int i = 0; i < num_render_components; i++) {
-
-		Material* material = render_components[i]->material;
-		set_uniform_material(&shader_texture, "u_material", material);
-
-		mat4 modelMatrix = GLM_MAT4_IDENTITY_INIT;
-
-		float angle = 20.0f * (float) i;
-		glm_rotate(modelMatrix, glm_rad(game_last_frame() * angle), (vec3) { 1.0f, 0.3f, 0.5f });
-
-		set_uniform_mat4(&shader_texture, "u_modelTransform", &modelMatrix);
-
-		ModelObject* model = models[i];
-
-		glBindVertexArray(render_components[i]->vao);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, render_components[i]->ebo);
-		glDrawElements(GL_TRIANGLES, model->index_count, GL_UNSIGNED_INT, nullptr);
-	}
+	// for (int i = 0; i < num_render_components; i++) {
+	//
+	// 	Material* material = render_components[i]->material;
+	// 	set_uniform_material(&shader_texture, "u_material", material);
+	//
+	// 	mat4 modelMatrix = GLM_MAT4_IDENTITY_INIT;
+	//
+	// 	float angle = 20.0f * (float) i;
+	// 	glm_rotate(modelMatrix, glm_rad(game_last_frame() * angle), (vec3) { 1.0f, 0.3f, 0.5f });
+	//
+	// 	set_uniform_mat4(&shader_texture, "u_modelTransform", &modelMatrix);
+	//
+	// 	ModelObject* model = models[i];
+	//
+	// 	glBindVertexArray(render_components[i]->vao);
+	// 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, render_components[i]->ebo);
+	// 	glDrawElements(GL_TRIANGLES, model->index_count, GL_UNSIGNED_INT, nullptr);
+	// }
 
 	use_shader(&shader_light_source);
 	set_uniform_vec3(&shader_light_source, "u_lightSourceColor", &light.ambient);
 
 	set_uniform_mat4(&shader_light_source, "u_projectionTransform", &projectionTransform);
 	set_uniform_mat4(&shader_light_source, "u_viewTransform", &viewTransform);
-
+	
 	mat4 modelTransform = GLM_MAT4_IDENTITY_INIT;
 	glm_translate(modelTransform, light.position);
 

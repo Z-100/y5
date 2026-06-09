@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-typedef struct Material Material;
+// Must be same as num of component_type
+#define NUM_COMPONENTS 5
 
 enum component_type {
 	TRANSFORM,
@@ -13,16 +14,21 @@ enum component_type {
 	RENDERER,
 };
 
-typedef struct ComponentRenderer {
-	uint32_t  vbo;
-	uint32_t  vao;
-	uint32_t  ebo;
-	Material* material;
-	uint32_t* textures;
-} component_renderer_t;
+typedef union {
 
-typedef struct {
-	enum component_type type;
-} component_t;
+	uint32_t components_raw;
+
+	struct {
+		// clang-format off
+		uint32_t transform    : 1;
+		uint32_t rotation     : 1;
+		uint32_t material     : 1;
+		uint32_t model_object : 1;
+		uint32_t renderer     : 1;
+		uint32_t padding      : 27;
+		// clang-format on
+	} bit_mask;
+
+} component_group_t;
 
 #endif

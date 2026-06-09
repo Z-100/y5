@@ -34,18 +34,16 @@ int main() {
 	ma_sound* wololo = load_sound(sound_engine, "wololo.mp3");
 	play_sound(wololo);
 
+	ecs_engine_t* ecs_engine = ecs_engine_new();
+	if (!ecs_engine) {
+		return -1;
+	}
+
 	renderer_init(game);
 	renderer_init_shaders();
 
-	// TODO: Cat breaks engine
-	// ModelObject* cat = load_model("res/models", "cat.obj");
-	// renderer_init_model(cat);
-
-	ModelObject* monkey = load_model("res/models", "monkey.obj");
-	renderer_init_model(monkey);
-
-	ModelObject* light_cube = load_model("res/models", "cube.obj");
-	renderer_init_model(light_cube);
+	spawn_element(ecs_engine, "monkey.obj");
+	spawn_element(ecs_engine, "cube.obj");
 
 	while (game_is_running()) {
 
@@ -54,7 +52,7 @@ int main() {
 
 		gui_update_imgui(game);
 
-		renderer_game_loop(game);
+		ecs_engine_tick(ecs_engine, game->delta_time);
 
 		gui_render_imgui();
 
