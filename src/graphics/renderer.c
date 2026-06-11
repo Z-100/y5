@@ -4,15 +4,6 @@
 static void _initialize_texture(char* texture_path, unsigned int* texture);
 static void _initialize_object(gl_object_t* gl_object);
 
-// clang-format off
-Light light = {
-	.position = { 0.0f, 5.0f, 0.0f },
-	.ambient =  { 0.8f, 0.8f, 0.8f },
-	.diffuse =  { 0.5f, 0.5f, 0.5f },
-	.specular = { 1.0f, 1.0f, 1.0f }
-};
-// clang-format on
-
 constexpr int WIDTH	 = 1280;
 constexpr int HEIGHT = 720;
 
@@ -66,6 +57,16 @@ void renderer_destroy() {
 
 	free(shader_programs);
 }
+
+void renderer_draw(uint32_t model_id) {
+
+	gl_object_t* gl_object = gl_objects[model_id];
+
+	glBindVertexArray(gl_object->vao);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_object->ebo);
+	glDrawElements(GL_TRIANGLES, gl_object->model_object->index_count, GL_UNSIGNED_INT, nullptr);
+}
+
 
 // =================
 // Loading/unloading

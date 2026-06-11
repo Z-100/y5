@@ -5,4 +5,8 @@
 
 void sys_renderer_update(ecs_engine_t* engine);
 
+
+
+void remove_but_load_camera(Camera* camera);
+
 #endif

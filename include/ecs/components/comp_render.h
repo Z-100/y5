@@ -1,14 +1,15 @@
 #ifndef COMP_RENDER_H
 #define COMP_RENDER_H
 
-#include <stdint.h>
-typedef struct Material material_t;
+#include "utils/headers_collection.h"
 
-typedef struct ComponentRenderer {
-	uint32_t	 vbo;
-	uint32_t	 vao;
-	uint32_t	 ebo;
-	ModelObject* model;
-} component_renderer_t;
+typedef struct {
+
+	// Only IDs for cache hits
+	uint32_t model_id;
+	uint32_t material_id;
+	uint32_t shader_id;
+
+} component_render_t;
 
 #endif

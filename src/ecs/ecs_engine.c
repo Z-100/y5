@@ -1,5 +1,4 @@
 #include "ecs/ecs_engine.h"
-#include "utils/headers_collection.h"
 
 static size_t get_component_size(enum component_type type);
 
@@ -78,7 +77,7 @@ archetype_t* ecs_get_or_create_archetype(ecs_engine_t* engine, component_group_t
 	for (int i = 0; i < NUM_COMPONENTS; i++) {
 
 		// Default: Not exists
-		arch->column_mapping[i] = -1;
+		arch->column_map[i] = -1;
 
 		if (signature.components_raw & (1 << i)) {
 			active_components++;
@@ -92,7 +91,7 @@ archetype_t* ecs_get_or_create_archetype(ecs_engine_t* engine, component_group_t
 
 		if (signature.components_raw & (1 << i)) {
 
-			arch->column_mapping[i] = col_idx;
+			arch->column_map[i] = col_idx;
 
 			size_t comp_size	   = get_component_size(i);
 			arch->columns[col_idx] = calloc(arch->row_capacity, comp_size);
@@ -131,7 +130,7 @@ entity_id_t ecs_entity_create(ecs_engine_t* engine, component_group_t signature)
 
 		for (int i = 0; i < NUM_COMPONENTS; i++) {
 
-			int32_t col_idx = arch->column_mapping[i];
+			int32_t col_idx = arch->column_map[i];
 
 			if (col_idx != -1) {
 				size_t comp_size = get_component_size(i);
@@ -159,12 +158,12 @@ entity_id_t ecs_entity_create(ecs_engine_t* engine, component_group_t signature)
 
 static size_t get_component_size(enum component_type type) {
 	switch (type) {
+		case RENDER:
+			return sizeof(component_render_t);
 		case TRANSFORM:
 			return sizeof(component_transform_t);
 		case ROTATION:
 			return sizeof(component_rotation_t);
-		case RENDERER:
-			return sizeof(component_renderer_t);
 		default:
 			return 0;
 	}

@@ -22,6 +22,8 @@ void renderer_init(const Game* game);
 void renderer_update(const Game* game);
 void renderer_destroy();
 
+void renderer_draw(uint32_t model_id);
+
 // =================
 // Loading/unloading
 // =================

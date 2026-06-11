@@ -1,8 +1,7 @@
 #ifndef ECS_H
 #define ECS_H
 
-#include <stddef.h>
-#include "component.h"
+#include "utils/headers_collection.h"
 
 #define ENTITY_CAP 100
 #define TICK_RATE 60
@@ -12,7 +11,7 @@ typedef uint64_t component_id_t;
 
 typedef struct {
 	component_id_t* types;
-	size_t		type_count;
+	size_t			type_count;
 } component_type_t;
 
 // ====================
@@ -24,7 +23,7 @@ typedef struct Archetype {
 
 	// Data & size
 	void**	columns;
-	int32_t column_mapping[NUM_COMPONENTS];
+	int32_t column_map[NUM_COMPONENTS];
 
 	// Entity->row
 	entity_id_t* entities;

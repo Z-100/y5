@@ -40,10 +40,19 @@ int main() {
 	}
 
 	renderer_init(game);
-	renderer_init_shaders();
+	renderer_load_shader(shader_program_default);
+	renderer_load_shader(shader_program_light);
 
-	spawn_element(ecs_engine, "monkey.obj");
-	spawn_element(ecs_engine, "cube.obj");
+	model_object_t* monkey_obj = load_model("res/models", "monkey.obj");
+	uint8_t			monkey_id  = renderer_load_model(monkey_obj);
+
+	model_object_t* cube_obj = load_model("res/models", "cube.obj");
+	uint8_t			cube_id	 = renderer_load_model(monkey_obj);
+
+	// TODO: Remove
+	remove_but_load_camera(game->player_camera);
+
+	spawner_summon(ecs_engine, monkey_id);
 
 	while (game_is_running()) {
 
