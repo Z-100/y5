@@ -1,51 +1,54 @@
 #include "graphics/shader_loader.h"
-#include "utils/headers_collection.h"
 
 const char* SHADERS_DIRECTORY = "res/shaders";
 
-unsigned int compile_shader(const struct Shader* shader);
-unsigned int build_shader_program(struct Shader* shaders, unsigned int shadersLength);
+static GLuint _compile_shader(shader_t shader);
+static void	  _link_shaders(shader_program_t* shader_program);
 
-unsigned int compile_shaders_to_shader_program(struct Array* shadersArray) {
+bool shader_loader_compile(shader_program_t* shader_program) {
 
-	if (shadersArray == NULL) {
+	if (shader_program == nullptr || shader_program->shaders == nullptr) {
 		log_error("No shaders provided");
-		return 0;
+		return false;
 	}
 
-	struct Shader* shaders = shadersArray->data;
+	if (shader_program->id != -1) {
+		log_error_f("Shader program:%d already compiled", shader_program->id);
+		return false;
+	}
 
-	for (int i = 0; i < shadersArray->length; i++) {
+	shader_t* shaders = shader_program->shaders;
 
-		struct Shader* shader = &shaders[i];
+	for (int i = 0; i < shader_program->shaders_count; i++) {
 
-		if (shader->name == NULL || shader->type == 0) {
-			log_error_f(
-				"Incomplete shader config provided: '%s' (type: %d)", shader->name, shader->type
-			);
+		shader_t shader = shaders[i];
+
+		if (shader.name == nullptr || shader.type == 0) {
+			log_error_f("Incomplete shader config: '%s' (type: %d)", shader.name, shader.type);
 			continue;
 		}
 
-		unsigned int shaderId = compile_shader(shader);
+		GLuint shader_id = _compile_shader(shader);
 
-		if (shaderId != 0) {
-			shader->id = shaderId;
+		if (shader_id != 0) {
+			shader.id = shader_id;
 		}
 	}
 
-	return build_shader_program(shaders, shadersArray->length);
+	_link_shaders(shader_program);
+	return true;
 }
 
 // ================
 // Helper functions
 // ================
 
-unsigned int compile_shader(const struct Shader* shader) {
+static GLuint _compile_shader(const shader_t shader) {
 
 	int	 success;
 	char logMsg[512];
 
-	char* shaderContentBufferPtr = read_lines_dir_name(SHADERS_DIRECTORY, shader->name);
+	char* shaderContentBufferPtr = read_lines_dir_name(SHADERS_DIRECTORY, shader.name);
 
 	const unsigned int shaderID = glCreateShader(shader->type);
 	glShaderSource(shaderID, 1, (const GLchar**) &shaderContentBufferPtr, nullptr);
@@ -57,43 +60,49 @@ unsigned int compile_shader(const struct Shader* shader) {
 
 	if (!success) {
 		glGetShaderInfoLog(shaderID, 512, nullptr, logMsg);
-		log_error_f("Error compiling shader '%s': %s", shader->name, logMsg);
+		log_error_f("Error compiling shader '%s': %s", shader.name, logMsg);
 		return 0;
 	}
 
 	return shaderID;
 }
 
-unsigned int build_shader_program(struct Shader* shaders, unsigned int shadersLength) {
+static void _link_shaders(shader_program_t* shader_program) {
 
 	int	 success;
 	char logMsg[512];
 
-	unsigned int shaderProgram = glCreateProgram();
+	shader_program->id		 = glCreateProgram();
+	GLuint shader_program_id = shader_program->id;
 
-	for (int i = 0; i < shadersLength; i++) {
-		struct Shader* shader = &shaders[i];
-		if (shader->id != 0) {
-			glAttachShader(shaderProgram, shader->id);
+	shader_t* shaders = shader_program->shaders;
+
+	for (int i = 0; i < shader_program->shaders_count; i++) {
+
+		shader_t shader = shaders[i];
+
+		if (shader.id != 0) {
+			glAttachShader(shader_program_id, shader.id);
 		}
 	}
 
-	glLinkProgram(shaderProgram);
+	glLinkProgram(shader_program_id);
 
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	glGetProgramiv(shader_program_id, GL_LINK_STATUS, &success);
+
 	if (!success) {
-		glGetShaderInfoLog(shaderProgram, 512, nullptr, logMsg);
+		glGetShaderInfoLog(shader_program_id, 512, nullptr, logMsg);
 		log_error_f("Error linking shaders: %s", logMsg);
 	}
 
 	for (int i = 0; i < 2; i++) {
-		struct Shader* shader = &shaders[i];
-		if (shader->id != 0) {
-			glDeleteShader(shader->id);
+
+		shader_t shader = shaders[i];
+
+		if (shader.id != 0) {
+			glDeleteShader(shader.id);
 		}
 	}
-
-	return shaderProgram;
 }
 
 // ====================
@@ -146,7 +155,7 @@ int set_uniform_mat4(const unsigned int* shaderPtr, const char* name, const mat4
 int set_uniform_material(
 	const unsigned int* shaderPtr,
 	const char*			name,
-	const Material*		material
+	const material_t*	material
 ) {
 
 	// Should be enough

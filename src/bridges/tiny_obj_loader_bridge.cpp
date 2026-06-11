@@ -46,7 +46,7 @@ void add_error(ModelMetadata* metadata, const std::string& msg) {
 	metadata->error = strdup(combined_errors.c_str());
 }
 
-extern "C" bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata) {
+extern "C" bool tiny_obj_load_obj(model_object_t* model, ModelMetadata* metadata) {
 
 	metadata->warning = nullptr;
 	metadata->error	  = nullptr;

@@ -192,9 +192,8 @@ typedef struct {
 	size_t*				   skin_weights_count;
 } tinyobj_attrib_t;
 
-typedef struct Material Material;
+typedef struct {
 
-typedef struct ModelObject {
 	tinyobj_attrib_t* attrib;
 
 	tinyobj_shape_t* shapes;
@@ -209,11 +208,7 @@ typedef struct ModelObject {
 	unsigned int* indices;
 	size_t		  index_count;
 
-	// TODO: Remove
-	char*	  texture_path;
-	Material* material;
-
-} ModelObject;
+} model_object_t;
 
 typedef struct ModelMetadata {
 	char* warning;
@@ -222,7 +217,7 @@ typedef struct ModelMetadata {
 	char* materials_path;
 } ModelMetadata;
 
-bool tiny_obj_load_obj(ModelObject* model, ModelMetadata* metadata);
+bool tiny_obj_load_obj(model_object_t* model, ModelMetadata* metadata);
 
 #ifdef __cplusplus
 }

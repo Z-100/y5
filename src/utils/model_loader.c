@@ -1,12 +1,10 @@
 #include "utils/model_loader.h"
-#include "bridges/tiny_obj_loader_bridge.h"
-#include "utils/headers_collection.h"
 
-ModelObject* load_model(char* directory, char* filename) {
+model_object_t* load_model(char* directory, char* filename) {
 
 	log_info_f("Loading model '%s'", filename);
 
-	ModelObject* model = malloc(sizeof(ModelObject));
+	model_object_t* model = malloc(sizeof(model_object_t));
 	if (!model) {
 		log_error_f("Failed malloc for building '%s/%s'", directory, filename);
 		return nullptr;

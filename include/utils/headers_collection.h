@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <lodepng.h>
+#include <stdint.h>
 #include <miniaudio.h>
 
 #include "bridges/tiny_obj_loader_bridge.h"
@@ -44,6 +45,7 @@
 #include "utils/logger_utils.h"
 #include "utils/math_utils.h"
 #include "utils/model_loader.h"
+#include "utils/shaders_collection.h"
 #include "utils/string_utils.h"
 
 #endif

@@ -1,19 +1,31 @@
 #ifndef SHADER_LOADER_H
 #define SHADER_LOADER_H
 
-typedef float vec3[3];
-typedef float vec4[4];
-typedef vec4  mat4[4];
-struct Array;
-typedef struct Material Material;
+#include "utils/headers_collection.h"
 
-static const char* VERTEX_SHADER_TEXTURES	= "vertex_shader_textures.glsl";
-static const char* FRAGMENT_SHADER_TEXTURES = "fragment_shader_textures.glsl";
+typedef struct {
+	unsigned int id;
+	const char*	 name;
+	int			 type;
+} shader_t;
 
-static const char* VERTEX_SHADER_LIGHT_SOURCE	= "vertex_shader_light_source.glsl";
-static const char* FRAGMENT_SHADER_LIGHT_SOURCE = "fragment_shader_light_source.glsl";
+typedef struct {
+	char* texture_name;
+	char* uniform_name;
+} shader_texture_t;
 
-unsigned int compile_shaders_to_shader_program(struct Array* shadersArray);
+typedef struct {
+	uint32_t id;
+
+	shader_t* shaders;
+	size_t	  shaders_count;
+
+	shader_texture_t* textures;
+	size_t			  textures_count;
+
+} shader_program_t;
+
+bool shader_loader_compile(shader_program_t* shader_program);
 
 // ====================
 // Direct shader access
@@ -26,7 +38,11 @@ int set_uniform_vec4(const unsigned int* shaderPtr, const char* name, const vec4
 
 int set_uniform_mat4(const unsigned int* shaderPtr, const char* name, const mat4* matrix);
 
-int set_uniform_material(const unsigned int* shaderPtr, const char* name, const Material* material);
+int set_uniform_material(
+	const unsigned int* shaderPtr,
+	const char*			name,
+	const material_t*	material
+);
 
 // ==============================================
 // Pure declarations - impl by cool ass macros :)

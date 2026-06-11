@@ -3,7 +3,7 @@
 
 typedef float vec3[3];
 
-typedef struct Material {
+typedef struct {
 	vec3  ambient;
 	vec3  diffuse;
 	vec3  specular;
@@ -22,45 +22,45 @@ typedef struct Light {
 // = Stones      =
 // ===============
 
-Material* materials_default();
-Material* materials_emerald();
-Material* materials_jade();
-Material* materials_obsidian();
-Material* materials_pearl();
-Material* materials_ruby();
-Material* materials_turquoise();
+material_t* materials_default();
+material_t* materials_emerald();
+material_t* materials_jade();
+material_t* materials_obsidian();
+material_t* materials_pearl();
+material_t* materials_ruby();
+material_t* materials_turquoise();
 
 // ===============
 // = Metals      =
 // ===============
 
-Material* materials_brass();
-Material* materials_bronze();
-Material* materials_chrome();
-Material* materials_copper();
-Material* materials_gold();
-Material* materials_silver();
+material_t* materials_brass();
+material_t* materials_bronze();
+material_t* materials_chrome();
+material_t* materials_copper();
+material_t* materials_gold();
+material_t* materials_silver();
 
 // ===============
 // = Plastics    =
 // ===============
 
-Material* materials_black_plastic();
-Material* materials_cyan_plastic();
-Material* materials_green_plastic();
-Material* materials_red_plastic();
-Material* materials_white_plastic();
-Material* materials_yellow_plastic();
+material_t* materials_black_plastic();
+material_t* materials_cyan_plastic();
+material_t* materials_green_plastic();
+material_t* materials_red_plastic();
+material_t* materials_white_plastic();
+material_t* materials_yellow_plastic();
 
 // ===============
 // = Rubbers     =
 // ===============
 
-Material* materials_black_rubber();
-Material* materials_cyan_rubber();
-Material* materials_green_rubber();
-Material* materials_red_rubber();
-Material* materials_white_rubber();
-Material* materials_yellow_rubber();
+material_t* materials_black_rubber();
+material_t* materials_cyan_rubber();
+material_t* materials_green_rubber();
+material_t* materials_red_rubber();
+material_t* materials_white_rubber();
+material_t* materials_yellow_rubber();
 
 #endif
