@@ -1,7 +1,8 @@
 #ifndef ECS_H
 #define ECS_H
 
-#include "utils/headers_collection.h"
+#include "utils/collection_sys.h"
+#include "ecs/component.h"
 
 #define ENTITY_CAP 100
 #define TICK_RATE 60
@@ -52,7 +53,7 @@ typedef struct {
 // = ECS global manager =
 // ======================
 
-typedef struct {
+typedef struct ecs_engine_t {
 	archetype_t** archetypes;
 	size_t		  arch_count;
 	size_t		  arch_capacity;

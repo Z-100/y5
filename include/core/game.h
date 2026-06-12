@@ -1,24 +1,22 @@
 #ifndef GAME_H
 #define GAME_H
 
-typedef struct GLFWwindow GLFWwindow;
-typedef struct Camera	  Camera;
-typedef float			  vec3[3];
+#include "utils/collection_sys.h"
 
-typedef struct Game {
+typedef struct game_t {
 
 	GLFWwindow* main_window;
-	Camera*		player_camera;
+	camera_t*		player_camera;
 
 	float main_scale;
 	float delta_time;
 	bool  mouse_locked;
 
 	bool running;
-} Game;
+} game_t;
 
 bool  game_init();
-Game* game_get_game();
+game_t* game_get_game();
 
 void game_update();
 

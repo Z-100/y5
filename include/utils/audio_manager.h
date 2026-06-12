@@ -1,8 +1,7 @@
 #ifndef AUDIO_MANAGER_H
 #define AUDIO_MANAGER_H
 
-typedef struct ma_engine ma_engine;
-typedef struct ma_sound	 ma_sound;
+#include "utils/collection_sys.h"
 
 ma_engine* init_audio_manager();
 int		   destroy_audio_manager(ma_engine* engine);

@@ -1,8 +1,5 @@
-#ifndef SHADERS_COLLECTION_H
-#define SHADERS_COLLECTION_H
-
-// Must be kept aligned to actual number of shader programs
-#define NUM_SHADER_PROGRAMS 2
+#include "graphics/shaders_collection.h"
+#include "utils/headers_collection.h"
 
 // ==============
 // Default shader
@@ -51,5 +48,3 @@ const shader_program_t shader_program_light = {
 	.shaders	   = (shader_t*) light_shaders,
 	.shaders_count = 2,
 };
-
-#endif

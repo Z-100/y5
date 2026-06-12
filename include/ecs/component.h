@@ -1,6 +1,8 @@
 #ifndef ECS_COMPONENT_H
 #define ECS_COMPONENT_H
 
+#include "utils/collection_sys.h"
+
 // Must be same as num of component_type
 #define NUM_COMPONENTS 3
 
@@ -25,12 +27,10 @@ typedef union {
 
 } component_group_t;
 
-const component_group_t filter_render	 = { .bit_mask = { .render = 1 } };
-const component_group_t filter_transform = { .bit_mask = { .transform = 1 } };
-const component_group_t filter_rotation	 = { .bit_mask = { .rotation = 1 } };
+extern const component_group_t filter_render;
+extern const component_group_t filter_transform;
+extern const component_group_t filter_rotation;
 
-bool has_component(component_group_t filter, component_group_t group) {
-	return (filter.components_raw & group.components_raw) != 0;
-}
+bool has_component(component_group_t filter, component_group_t group);
 
 #endif

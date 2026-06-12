@@ -1,20 +1,6 @@
 #ifndef HEADERS_COLLECTION_H
 #define HEADERS_COLLECTION_H
 
-#define GLFW_INCLUDE_NONE
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include <cglm/cglm.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <lodepng.h>
-#include <stdint.h>
-#include <miniaudio.h>
-
 #include "components/materials.h"
 #include "graphics/shader_loader.h"
 
@@ -46,7 +32,7 @@
 #include "utils/logger_utils.h"
 #include "utils/math_utils.h"
 #include "utils/model_loader.h"
-#include "utils/shaders_collection.h"
+#include "../graphics/shaders_collection.h"
 #include "utils/string_utils.h"
 
 #endif

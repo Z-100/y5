@@ -3,11 +3,11 @@
 
 float last_frame = 0;
 
-static Game* game = nullptr;
+static game_t* game = nullptr;
 
 bool game_init() {
 
-	game = malloc(sizeof(Game));
+	game = malloc(sizeof(game_t));
 
 	if (!game) {
 		log_error("Failed allocating for game");
@@ -19,7 +19,7 @@ bool game_init() {
 	return true;
 }
 
-Game* game_get_game() {
+game_t* game_get_game() {
 	return game;
 }
 

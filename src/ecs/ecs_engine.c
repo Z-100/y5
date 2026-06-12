@@ -1,4 +1,5 @@
 #include "ecs/ecs_engine.h"
+#include "utils/headers_collection.h"
 
 static size_t get_component_size(enum component_type type);
 

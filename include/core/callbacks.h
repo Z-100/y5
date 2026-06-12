@@ -1,7 +1,7 @@
 #ifndef CALLBACKS_H
 #define CALLBACKS_H
 
-typedef struct GLFWwindow GLFWwindow;
+#include "utils/collection_sys.h"
 
 void error_callback(int id, const char* msg);
 

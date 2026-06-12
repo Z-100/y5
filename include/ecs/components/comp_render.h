@@ -1,7 +1,7 @@
 #ifndef COMP_RENDER_H
 #define COMP_RENDER_H
 
-#include "utils/headers_collection.h"
+#include "utils/collection_sys.h"
 
 typedef struct {
 

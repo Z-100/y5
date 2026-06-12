@@ -20,7 +20,7 @@ static size_t			  shader_programs_count = 0;
 // General rendering
 // =================
 
-void renderer_init(const Game* game) {
+void renderer_init(const game_t* game) {
 
 	texture_ids		= malloc(sizeof(GLuint) * 100);
 	gl_objects		= malloc(sizeof(model_object_t*) * 100);
@@ -35,7 +35,7 @@ void renderer_init(const Game* game) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-void renderer_update(const Game* game) {
+void renderer_update(const game_t* game) {
 	glfwSwapBuffers(game->main_window);
 	glfwPollEvents();
 }

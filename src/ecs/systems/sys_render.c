@@ -1,5 +1,5 @@
-#include "ecs/systems/sys_render.h"
 #include "utils/headers_collection.h"
+#include "ecs/systems/sys_render.h"
 
 // TODO: Remove
 constexpr int WIDTH	 = 1280;
@@ -52,8 +52,8 @@ static void _render_light_cube() {
 	} while (0)
 
 // TODO: Remove
-static Camera* player_camera;
-void remove_but_load_camera(Camera* camera) {
+static camera_t* player_camera;
+void remove_but_load_camera(camera_t* camera) {
 	player_camera = camera;
 }
 

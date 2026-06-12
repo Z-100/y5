@@ -1,10 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-typedef float		vec3[3];
-typedef float		vec4[4];
-typedef vec4		mat4[4];
-typedef struct Game Game;
+#include "utils/collection_sys.h"
 
 enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
@@ -14,7 +11,7 @@ enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN };
 #define DEFAULT_LOOK_SENSITIVITY 0.1f;
 #define DEFAULT_ZOOM 45.0f;
 
-typedef struct Camera {
+typedef struct camera_t {
 	vec3 position;
 	vec3 front;
 	vec3 up;
@@ -30,12 +27,12 @@ typedef struct Camera {
 
 	float last_x;
 	float last_y;
-} Camera;
+} camera_t;
 
-int	 camera_create_player_camera(Game* game);
-void camera_get_view_matrix(Camera* camera, mat4* dest_view_matrix);
-void camera_process_keyboard(Game* game, enum Camera_Movement movement);
-void camera_process_mouse_movement(float xPos, float yPos, Camera* camera);
-void camera_process_mouse_scroll(float yOffset, Camera* camera);
+int	 camera_create_player_camera(game_t* game);
+void camera_get_view_matrix(camera_t* camera, mat4* dest_view_matrix);
+void camera_process_keyboard(game_t* game, enum Camera_Movement movement);
+void camera_process_mouse_movement(float xPos, float yPos, camera_t* camera);
+void camera_process_mouse_scroll(float yOffset, camera_t* camera);
 
 #endif

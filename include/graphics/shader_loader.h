@@ -1,29 +1,7 @@
 #ifndef SHADER_LOADER_H
 #define SHADER_LOADER_H
 
-#include "utils/headers_collection.h"
-
-typedef struct {
-	unsigned int id;
-	const char*	 name;
-	int			 type;
-} shader_t;
-
-typedef struct {
-	char* texture_name;
-	char* uniform_name;
-} shader_texture_t;
-
-typedef struct {
-	uint32_t id;
-
-	shader_t* shaders;
-	size_t	  shaders_count;
-
-	shader_texture_t* textures;
-	size_t			  textures_count;
-
-} shader_program_t;
+#include "utils/collection_sys.h"
 
 bool shader_loader_compile(shader_program_t* shader_program);
 

@@ -4,7 +4,7 @@
 constexpr int DEFAULT_WINDOW_WIDTH	= 1280;
 constexpr int DEFAULT_WINDOW_HEIGHT = 720;
 
-bool window_manager_create_main(Game* game) {
+bool window_manager_create_main(game_t* game) {
 
 	glfwSetErrorCallback(error_callback);
 
@@ -51,7 +51,7 @@ bool window_manager_create_main(Game* game) {
 	return true;
 }
 
-bool window_manager_destroy_main(Game* game) {
+bool window_manager_destroy_main(game_t* game) {
 	glfwTerminate();
 	return true;
 }

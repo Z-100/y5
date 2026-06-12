@@ -12,8 +12,8 @@ void framebuffer_size_callback(GLFWwindow* window, const int width, const int he
 static bool first_mouse = true;
 void mouse_callback(GLFWwindow* window, double xPosD, double yPosD) {
 
-	Game* game = game_get_game();
-	Camera* camera = game->player_camera;
+	game_t* game = game_get_game();
+	camera_t* camera = game->player_camera;
 
 	// No camera movement if not locked
 	if (!game->mouse_locked) {
@@ -34,6 +34,6 @@ void mouse_callback(GLFWwindow* window, double xPosD, double yPosD) {
 }
 
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset) {
-	Game* game = game_get_game();
+	game_t* game = game_get_game();
 	camera_process_mouse_scroll((float) yOffset, game->player_camera);
 }

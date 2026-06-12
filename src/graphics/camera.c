@@ -5,11 +5,11 @@ bool  camera_is_first_focus = true;
 float camera_last_x			= .0f;
 float camera_last_y			= .0f;
 
-void update_camera_vectors(Camera* camera);
+static void _update_camera_vectors(camera_t* camera);
 
-int camera_create_player_camera(Game* game) {
+int camera_create_player_camera(game_t* game) {
 
-	Camera* player_camera = malloc(sizeof(Camera));
+	camera_t* player_camera = malloc(sizeof(camera_t));
 	game->player_camera	  = player_camera;
 
 	if (!player_camera) {
@@ -29,12 +29,12 @@ int camera_create_player_camera(Game* game) {
 	player_camera->look_sensitivity = DEFAULT_LOOK_SENSITIVITY;
 	player_camera->zoom				= DEFAULT_ZOOM;
 
-	update_camera_vectors(player_camera);
+	_update_camera_vectors(player_camera);
 
 	return 0;
 }
 
-void camera_get_view_matrix(Camera* camera, mat4* dest_view_matrix) {
+void camera_get_view_matrix(camera_t* camera, mat4* dest_view_matrix) {
 
 	vec3 center = GLM_VEC3_ZERO_INIT;
 	glm_vec3_add(camera->position, camera->front, center);
@@ -42,9 +42,9 @@ void camera_get_view_matrix(Camera* camera, mat4* dest_view_matrix) {
 	glm_lookat(camera->position, center, camera->up, *dest_view_matrix);
 }
 
-void camera_process_keyboard(Game* game, enum Camera_Movement movement) {
+void camera_process_keyboard(game_t* game, enum Camera_Movement movement) {
 
-	Camera* camera = game->player_camera;
+	camera_t* camera = game->player_camera;
 
 	float velocity		= camera->move_speed * game->delta_time;
 	vec3  tempDirection = GLM_VEC3_ZERO_INIT;
@@ -84,7 +84,7 @@ void camera_process_keyboard(Game* game, enum Camera_Movement movement) {
 	glm_vec3_copy(tempDirection, camera->position);
 }
 
-void camera_process_mouse_movement(float xPos, float yPos, Camera* camera) {
+void camera_process_mouse_movement(float xPos, float yPos, camera_t* camera) {
 
 	if (camera_is_first_focus) {
 		camera_last_x		  = xPos;
@@ -107,10 +107,10 @@ void camera_process_mouse_movement(float xPos, float yPos, Camera* camera) {
 		camera->pitch += yOffset;
 	}
 
-	update_camera_vectors(camera);
+	_update_camera_vectors(camera);
 }
 
-void camera_process_mouse_scroll(float yOffset, Camera* camera) {
+void camera_process_mouse_scroll(float yOffset, camera_t* camera) {
 
 	camera->zoom -= yOffset;
 
@@ -121,7 +121,7 @@ void camera_process_mouse_scroll(float yOffset, Camera* camera) {
 	}
 }
 
-void update_camera_vectors(Camera* camera) {
+static void _update_camera_vectors(camera_t* camera) {
 
 	camera->front[0] = cosf(glm_rad(camera->yaw)) * cosf(glm_rad(camera->pitch));
 	camera->front[1] = sinf(glm_rad(camera->pitch));

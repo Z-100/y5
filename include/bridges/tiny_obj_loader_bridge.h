@@ -26,20 +26,26 @@ typedef enum {
 } texture_type_t;
 
 typedef struct {
+
 	texture_type_t* type;
-	real_t*			sharpness;
-	real_t*			brightness;
-	real_t*			contrast;
-	vec3*			origin_offset;
-	vec3*			scale;
-	vec3*			turbulence;
-	int*			texture_resolution;
-	bool*			clamp;
-	char*			imfchan;
-	bool*			blendu;
-	bool*			blendv;
-	real_t*			bump_multiplier;
-	char*			colorspace;
+
+	real_t* sharpness;
+	real_t* brightness;
+	real_t* contrast;
+	vec3*	origin_offset;
+	vec3*	scale;
+	vec3*	turbulence;
+
+	int*  texture_resolution;
+	bool* clamp;
+
+	char* imfchan;
+	bool* blendu;
+	bool* blendv;
+
+	real_t* bump_multiplier;
+	char*	colorspace;
+
 } tinyobj_texture_option_t;
 
 typedef struct {
@@ -192,7 +198,7 @@ typedef struct {
 	size_t*				   skin_weights_count;
 } tinyobj_attrib_t;
 
-typedef struct {
+typedef struct model_object_t {
 
 	tinyobj_attrib_t* attrib;
 

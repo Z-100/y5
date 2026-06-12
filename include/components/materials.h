@@ -1,9 +1,9 @@
 #ifndef MATERIALS_H
 #define MATERIALS_H
 
-typedef float vec3[3];
+#include "utils/collection_sys.h"
 
-typedef struct {
+typedef struct material_t {
 	vec3  ambient;
 	vec3  diffuse;
 	vec3  specular;

@@ -1,4 +1,5 @@
 #include "graphics/shader_loader.h"
+#include "utils/headers_collection.h"
 
 const char* SHADERS_DIRECTORY = "res/shaders";
 
@@ -50,7 +51,7 @@ static GLuint _compile_shader(const shader_t shader) {
 
 	char* shaderContentBufferPtr = read_lines_dir_name(SHADERS_DIRECTORY, shader.name);
 
-	const unsigned int shaderID = glCreateShader(shader->type);
+	const unsigned int shaderID = glCreateShader(shader.type);
 	glShaderSource(shaderID, 1, (const GLchar**) &shaderContentBufferPtr, nullptr);
 	glCompileShader(shaderID);
 

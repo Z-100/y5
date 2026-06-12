@@ -12,16 +12,16 @@
 static ImGuiContext* imgui_context;
 static ImGuiIO*		 imgui_io;
 
-static void draw_prod_info();
-static void draw_game_info(const Game* game);
-static void draw_game_spawner(const Game* game);
+static void _draw_prod_info();
+static void _draw_game_info(const game_t* game);
+static void _draw_game_spawner(const game_t* game);
 
 float gui_main_scale() {
 	GLFWmonitor* glfw_monitor = glfwGetPrimaryMonitor();
 	return cimGui_ImplGlfw_GetContentScaleForMonitor(glfw_monitor);
 }
 
-bool gui_init_imgui(const Game* game) {
+bool gui_init_imgui(const game_t* game) {
 
 	log_info("Start initializing imgui");
 
@@ -68,16 +68,16 @@ void gui_terminate_imgui() {
 	log_info("Finish terminating imgui");
 }
 
-void gui_update_imgui(const Game* game) {
+void gui_update_imgui(const game_t* game) {
 
 	cimgui_ImplOpenGL3_NewFrame();
 	cimgui_ImplGlfw_NewFrame();
 
 	igNewFrame();
 
-	draw_prod_info();
-	draw_game_info(game);
-	draw_game_spawner(game);
+	_draw_prod_info();
+	_draw_game_info(game);
+	_draw_game_spawner(game);
 
 	igEnd();
 }
@@ -90,7 +90,7 @@ void gui_render_imgui() {
 	cimgui_ImplOpenGL3_RenderDrawData(draw_data);
 }
 
-static void draw_prod_info() {
+static void _draw_prod_info() {
 
 	ImVec2 pos = { 1280.0f, 0.0f };
 	igSetNextWindowPos(pos, ImGuiCond_Always, (ImVec2) { 0, 0 });
@@ -100,7 +100,7 @@ static void draw_prod_info() {
 	igText("Fuck you imgui :3");
 }
 
-static void draw_game_info(const Game* game) {
+static void _draw_game_info(const game_t* game) {
 
 	ImVec2 pos = { 0.0f, 0.0f };
 	igSetNextWindowPos(pos, ImGuiCond_Always, (ImVec2) { 0, 0 });
@@ -119,7 +119,7 @@ static void draw_game_info(const Game* game) {
 
 static int selected_index = -1;
 
-static void draw_game_spawner(const Game* game) {
+static void _draw_game_spawner(const game_t* game) {
 
 	ImVec2 pos = { 0.0f, 500.0f };
 	igSetNextWindowPos(pos, ImGuiCond_Always, (ImVec2) { 0, 0 });

@@ -1,14 +1,14 @@
 #include "utils/headers_collection.h"
 
 const char* APP_NAME = "y5";
-void		process_inputs(Game* game);
+void		process_inputs(game_t* game);
 
 int main() {
 
 	log_info_f("Starting %s application", APP_NAME);
 
 	bool  game_initialized = game_init();
-	Game* game			   = game_get_game();
+	game_t* game			   = game_get_game();
 
 	if (!game_initialized || !game) {
 		return -1;
@@ -40,8 +40,8 @@ int main() {
 	}
 
 	renderer_init(game);
-	renderer_load_shader(shader_program_default);
-	renderer_load_shader(shader_program_light);
+	renderer_load_shader(&shader_program_default);
+	renderer_load_shader(&shader_program_light);
 
 	model_object_t* monkey_obj = load_model("res/models", "monkey.obj");
 	uint8_t			monkey_id  = renderer_load_model(monkey_obj);
@@ -52,7 +52,7 @@ int main() {
 	// TODO: Remove
 	remove_but_load_camera(game->player_camera);
 
-	spawner_summon(ecs_engine, monkey_id);
+	// spawner_summon(ecs_engine, monkey_id);
 
 	while (game_is_running()) {
 
@@ -75,7 +75,7 @@ int main() {
 	return 0;
 }
 
-void process_inputs(Game* game) {
+void process_inputs(game_t* game) {
 
 	GLFWwindow* main_window = game->main_window;
 
