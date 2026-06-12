@@ -1,50 +1,86 @@
 #include "graphics/shaders_collection.h"
 #include "utils/headers_collection.h"
 
-// ==============
-// Default shader
-// ==============
+static void _init_shader(shader_t* shader, const char* name, const GLuint type);
+static void _init_texture(shader_texture_t* tex, const char* tex_name, const char* uni_name);
 
-const shader_t default_vertex = { .name = "vertex_shader_textures.glsl", .type = GL_VERTEX_SHADER };
+// ====================
+// = Shaders: Default =
+// ====================
 
-const shader_t default_fragment = { .name = "fragment_shader_textures.glsl",
-									.type = GL_FRAGMENT_SHADER };
+static shader_program_t* shader_program_default = nullptr;
 
-const shader_t default_shaders[2] = { default_vertex, default_fragment };
+shader_program_t* shaders_collection_default() {
 
-const shader_texture_t default_texture_elmo = {
-	.texture_name = "res/textures/elmo.png",
-	.uniform_name = "u_elmoTexture",
-};
+	if (shader_program_default) {
+		log_warn("shader_program:default already built");
+		return shader_program_default;
+	}
 
-const shader_texture_t default_texture_obama = {
-	.texture_name = "res/textures/obama.png",
-	.uniform_name = "u_obamaTexture",
-};
-const shader_texture_t default_textures[] = { default_texture_elmo, default_texture_obama };
+	shader_program_default = malloc(sizeof(shader_program_t));
+	if (!shader_program_default) {
+		log_error("Failed allocating for shader program");
+		return nullptr;
+	}
 
-const shader_program_t shader_program_default = {
+	shader_program_default->id = -1;
 
-	.shaders	   = (shader_t*) default_shaders,
-	.shaders_count = 2,
+	shader_program_default->shaders = calloc(sizeof(shader_t), 2);
+	shader_program_default->shaders_count = 2;
+	_init_shader(&shader_program_default->shaders[0], "vertex_shader_textures.glsl", GL_VERTEX_SHADER);
+	_init_shader(&shader_program_default->shaders[1], "fragment_shader_textures.glsl", GL_FRAGMENT_SHADER);
 
-	.textures		= (shader_texture_t*) default_textures,
-	.textures_count = 2,
-};
+	shader_program_default->textures = calloc(sizeof(shader_texture_t), 2);
+	shader_program_default->textures_count = 2;
+	_init_texture(&shader_program_default->textures[0], "res/textures/elmo.png", "u_elmoTexture");
+	_init_texture(&shader_program_default->textures[1], "res/textures/obama.png", "u_obamaTexture");
 
-// ==============
-// Light shader
-// ==============
+	return shader_program_default;
+}
 
-const shader_t light_vertex = { .name = "vertex_shader_light_source.glsl",
-								.type = GL_VERTEX_SHADER };
+// ====================
+// = Shaders: Light   =
+// ====================
 
-const shader_t light_fragment = { .name = "fragment_shader_light_source.glsl",
-								  .type = GL_FRAGMENT_SHADER };
+static shader_program_t* shader_program_light = nullptr;
 
-const shader_t light_shaders[2] = { default_vertex, default_fragment };
+shader_program_t* shaders_collection_light() {
 
-const shader_program_t shader_program_light = {
-	.shaders	   = (shader_t*) light_shaders,
-	.shaders_count = 2,
-};
+	if (shader_program_light) {
+		log_warn("shader_program:default already built");
+		return shader_program_light;
+	}
+
+	shader_program_light = malloc(sizeof(shader_program_t));
+	if (!shader_program_light) {
+		log_error("Failed allocating for shader program");
+		return nullptr;
+	}
+
+	shader_program_light->id = -1;
+	shader_program_light->textures_count = 0;
+
+	shader_program_light->shaders = calloc(sizeof(shader_t), 2);
+	shader_program_light->shaders_count = 2;
+	_init_shader(&shader_program_light->shaders[0], "vertex_shader_light_source.glsl", GL_VERTEX_SHADER);
+	_init_shader(&shader_program_light->shaders[1], "fragment_shader_light_source.glsl", GL_FRAGMENT_SHADER);
+
+	return shader_program_light;
+}
+
+// ====================
+// = Shaders: Helpers =
+// ====================
+
+static void _init_shader(shader_t* shader, const char* name, const GLuint type) {
+	shader->id = -1;
+	shader->name = name;
+	shader->type = type;
+}
+
+static void _init_texture(shader_texture_t* tex, const char* tex_name, const char* uni_name) {
+	tex->id = -1;
+	tex->texture_name = tex_name;
+	tex->uniform_name = uni_name;
+}
+

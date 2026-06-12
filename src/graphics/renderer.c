@@ -67,7 +67,6 @@ void renderer_draw(uint32_t model_id) {
 	glDrawElements(GL_TRIANGLES, gl_object->model_object->index_count, GL_UNSIGNED_INT, nullptr);
 }
 
-
 // =================
 // Loading/unloading
 // =================
@@ -80,26 +79,28 @@ void renderer_load_shader(shader_program_t* shader_program) {
 		return;
 	}
 
-	uint32_t		  shader_program_id = shader_program->id;
+	GLuint			  shader_program_id = shader_program->id;
 	shader_texture_t* shader_textures	= shader_program->textures;
 
 	shader_programs[shader_programs_count++] = shader_program;
 
 	for (int i = 0; i < shader_program->textures_count; i++) {
 
-		shader_texture_t texture = shader_textures[i];
+		shader_texture_t* texture = &shader_textures[i];
 
 		GLuint texture_id = texture_ids[texture_ids_count++];
 		texture_id		  = -1;
 
-		_initialize_texture(texture.texture_name, &texture_id);
+		_initialize_texture(texture->texture_name, &texture_id);
+
+		texture->id = texture_id;
 
 		use_shader(&shader_program_id);
-		set_uniform_int(&shader_program_id, texture.uniform_name, texture_id);
+		set_uniform_int(&shader_program_id, texture->uniform_name, texture_id);
 
 		log_info_f(
-			"Bound texture '%s' to uniform '%s' in shader_program:%d", texture.texture_name,
-			texture.uniform_name, texture_id
+			"Bound texture '%s' to uniform '%s' in shader_program:%d", texture->texture_name,
+			texture->uniform_name, texture_id
 		);
 	}
 }
@@ -112,8 +113,8 @@ uint8_t renderer_load_model(model_object_t* model_object) {
 		return -1;
 	}
 
-	uint8_t gl_object_id	   = gl_objects_count;
-	gl_objects[gl_object_id++] = gl_object;
+	uint8_t gl_object_id		   = gl_objects_count;
+	gl_objects[gl_objects_count++] = gl_object;
 
 	gl_object->model_object = model_object;
 	_initialize_object(gl_object);

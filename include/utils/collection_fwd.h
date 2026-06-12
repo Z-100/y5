@@ -7,6 +7,7 @@ typedef struct camera_t camera_t;
 typedef struct game_t game_t;
 
 typedef struct ecs_engine_t ecs_engine_t;
+typedef union component_group_t component_group_t;
 
 typedef struct shader_program_t shader_program_t;
 typedef struct shader_texture_t shader_texture_t;

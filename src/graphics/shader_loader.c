@@ -3,7 +3,7 @@
 
 const char* SHADERS_DIRECTORY = "res/shaders";
 
-static GLuint _compile_shader(shader_t shader);
+static GLuint _compile_shader(const shader_t* shader);
 static void	  _link_shaders(shader_program_t* shader_program);
 
 bool shader_loader_compile(shader_program_t* shader_program) {
@@ -22,17 +22,17 @@ bool shader_loader_compile(shader_program_t* shader_program) {
 
 	for (int i = 0; i < shader_program->shaders_count; i++) {
 
-		shader_t shader = shaders[i];
+		shader_t* shader = &shaders[i];
 
-		if (shader.name == nullptr || shader.type == 0) {
-			log_error_f("Incomplete shader config: '%s' (type: %d)", shader.name, shader.type);
+		if (shader->name == nullptr || shader->type == 0) {
+			log_error_f("Incomplete shader config: '%s' (type: %d)", shader->name, shader->type);
 			continue;
 		}
 
 		GLuint shader_id = _compile_shader(shader);
 
 		if (shader_id != 0) {
-			shader.id = shader_id;
+			shader->id = shader_id;
 		}
 	}
 
@@ -44,14 +44,14 @@ bool shader_loader_compile(shader_program_t* shader_program) {
 // Helper functions
 // ================
 
-static GLuint _compile_shader(const shader_t shader) {
+static GLuint _compile_shader(const shader_t* shader) {
 
 	int	 success;
 	char logMsg[512];
 
-	char* shaderContentBufferPtr = read_lines_dir_name(SHADERS_DIRECTORY, shader.name);
+	char* shaderContentBufferPtr = read_lines_dir_name(SHADERS_DIRECTORY, shader->name);
 
-	const unsigned int shaderID = glCreateShader(shader.type);
+	const unsigned int shaderID = glCreateShader(shader->type);
 	glShaderSource(shaderID, 1, (const GLchar**) &shaderContentBufferPtr, nullptr);
 	glCompileShader(shaderID);
 
@@ -61,7 +61,7 @@ static GLuint _compile_shader(const shader_t shader) {
 
 	if (!success) {
 		glGetShaderInfoLog(shaderID, 512, nullptr, logMsg);
-		log_error_f("Error compiling shader '%s': %s", shader.name, logMsg);
+		log_error_f("Error compiling shader '%s': %s", shader->name, logMsg);
 		return 0;
 	}
 
@@ -73,17 +73,19 @@ static void _link_shaders(shader_program_t* shader_program) {
 	int	 success;
 	char logMsg[512];
 
-	shader_program->id		 = glCreateProgram();
+	GLuint shader_prog_id = glCreateProgram();
+
+	shader_program->id		 = shader_prog_id;
 	GLuint shader_program_id = shader_program->id;
 
 	shader_t* shaders = shader_program->shaders;
 
 	for (int i = 0; i < shader_program->shaders_count; i++) {
 
-		shader_t shader = shaders[i];
+		shader_t* shader = &shaders[i];
 
-		if (shader.id != 0) {
-			glAttachShader(shader_program_id, shader.id);
+		if (shader->id != 0) {
+			glAttachShader(shader_program_id, shader->id);
 		}
 	}
 
@@ -98,10 +100,10 @@ static void _link_shaders(shader_program_t* shader_program) {
 
 	for (int i = 0; i < 2; i++) {
 
-		shader_t shader = shaders[i];
+		shader_t* shader = &shaders[i];
 
-		if (shader.id != 0) {
-			glDeleteShader(shader.id);
+		if (shader->id != 0) {
+			glDeleteShader(shader->id);
 		}
 	}
 }

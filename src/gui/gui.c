@@ -111,7 +111,7 @@ static void _draw_game_info(const game_t* game) {
 
 	float* position = game->player_camera->position;
 	igText("XYZ: [ %.3f, %.3f, %.3f ]", position[0], position[1], position[2]);
-
+	igText("Pitch/Yaw: [ %.3f, %.3f ]", game->player_camera->pitch, game->player_camera->yaw);
 	igText("Mouse lock: %d", game->mouse_locked);
 
 	igEnd();

@@ -3,9 +3,13 @@
 
 #include "utils/collection_sys.h"
 
-typedef vec3 component_transform_t;
+typedef struct component_transform_t {
+	float x;
+	float y;
+	float z;
+} component_transform_t;
 
-typedef struct {
+typedef struct component_rotation_t {
 	float pitch;
 	float yaw;
 	float roll;

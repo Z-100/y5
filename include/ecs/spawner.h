@@ -3,7 +3,13 @@
 
 #include "utils/collection_sys.h"
 
-void spawner_spawn(ecs_engine_t* ecs_engine, char* model_name);
-void spawner_summon(ecs_engine_t* ecs_engine, uint8_t model_id);
+void spawner_summon(
+	ecs_engine_t*	  ecs_engine,
+	component_group_t group,
+	uint8_t			  model_id,
+	GLuint			  shader_id,
+	GLuint			  diffuse_id,
+	GLuint			  specular_id
+);
 
 #endif

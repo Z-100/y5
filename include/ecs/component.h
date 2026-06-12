@@ -12,7 +12,7 @@ enum component_type {
 	ROTATION,
 };
 
-typedef union {
+typedef union component_group_t {
 
 	uint32_t components_raw;
 

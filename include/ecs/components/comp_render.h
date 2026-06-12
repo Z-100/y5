@@ -10,6 +10,9 @@ typedef struct {
 	uint32_t material_id;
 	uint32_t shader_id;
 
+	uint32_t diffuse_id;
+	uint32_t specular_id;
+
 } component_render_t;
 
 #endif

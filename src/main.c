@@ -7,8 +7,8 @@ int main() {
 
 	log_info_f("Starting %s application", APP_NAME);
 
-	bool  game_initialized = game_init();
-	game_t* game			   = game_get_game();
+	bool	game_initialized = game_init();
+	game_t* game			 = game_get_game();
 
 	if (!game_initialized || !game) {
 		return -1;
@@ -39,20 +39,30 @@ int main() {
 		return -1;
 	}
 
+	shader_program_t* shader_program_default = shaders_collection_default();
+	shader_program_t* shader_program_light	 = shaders_collection_light();
+
 	renderer_init(game);
-	renderer_load_shader(&shader_program_default);
-	renderer_load_shader(&shader_program_light);
+	renderer_load_shader(shader_program_default);
+	renderer_load_shader(shader_program_light);
 
 	model_object_t* monkey_obj = load_model("res/models", "monkey.obj");
 	uint8_t			monkey_id  = renderer_load_model(monkey_obj);
 
 	model_object_t* cube_obj = load_model("res/models", "cube.obj");
-	uint8_t			cube_id	 = renderer_load_model(monkey_obj);
+	uint8_t			cube_id	 = renderer_load_model(cube_obj);
 
 	// TODO: Remove
 	remove_but_load_camera(game->player_camera);
 
-	// spawner_summon(ecs_engine, monkey_id);
+	component_group_t grp1 = { .bit_mask = { .render = 1 } };
+	spawner_summon(
+		ecs_engine, grp1, monkey_id, shader_program_default->id,
+		shader_program_default->textures[0].id, shader_program_default->textures[1].id
+	);
+
+	// component_group_t grp2 = { .bit_mask = { .render = 1, .transform = 1 } };
+	// spawner_summon(ecs_engine, grp2, cube_id, shader_program_light->id, 0, 0);
 
 	while (game_is_running()) {
 
