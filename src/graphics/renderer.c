@@ -52,7 +52,7 @@ void renderer_destroy() {
 	}
 
 	for (int i = 0; i < shader_programs_count; i++) {
-		glDeleteProgram(shader_programs[shader_programs_count]->id);
+		glDeleteProgram(shader_programs[i]->id);
 	}
 
 	free(shader_programs);

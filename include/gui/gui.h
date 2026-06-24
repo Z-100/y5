@@ -3,6 +3,10 @@
 
 #include "utils/collection_sys.h"
 
+
+
+void remove_but_set_spawn_info(spawn_info_t* info);
+
 float gui_main_scale();
 
 bool gui_init_imgui(const game_t* game);

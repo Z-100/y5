@@ -27,10 +27,8 @@ typedef union component_group_t {
 
 } component_group_t;
 
-extern const component_group_t filter_render;
-extern const component_group_t filter_transform;
-extern const component_group_t filter_rotation;
-
 bool has_component(component_group_t filter, component_group_t group);
+
+extern const component_group_t filter_renderer;
 
 #endif

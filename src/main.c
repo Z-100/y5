@@ -39,6 +39,8 @@ int main() {
 		return -1;
 	}
 
+	game->ecs_engine = ecs_engine;
+
 	shader_program_t* shader_program_default = shaders_collection_default();
 	shader_program_t* shader_program_light	 = shaders_collection_light();
 
@@ -55,11 +57,32 @@ int main() {
 	// TODO: Remove
 	remove_but_load_camera(game->player_camera);
 
-	component_group_t grp1 = { .bit_mask = { .render = 1 } };
-	spawner_summon(
-		ecs_engine, grp1, monkey_id, shader_program_default->id,
-		shader_program_default->textures[0].id, shader_program_default->textures[1].id
-	);
+	// clang-format off
+	component_group_t grp1 = { .bit_mask = { .render = 1, .transform = 1, .rotation = 1 } };
+	spawn_info_t spawn1 = {
+		.model_id = monkey_id,
+		.shader_id = shader_program_default->id,
+		.diffuse_id = shader_program_default->textures[0].id,
+		.specular_id = shader_program_default->textures[1].id,
+		.initial_pos = { 0, 0, 0 },
+		.initial_rotation = { 0, 0, 0, 1 }
+	};
+	// clang-format on
+	remove_but_set_spawn_info(&spawn1);
+	spawner_summon(ecs_engine, grp1, &spawn1);
+
+	component_group_t grp2 = { .bit_mask = { .render = 1, .transform = 1, .rotation = 1 } };
+	// clang-format off
+	spawn_info_t spawn2 = {
+		.model_id = cube_id,
+		.shader_id = shader_program_default->id,
+		.diffuse_id = shader_program_default->textures[0].id,
+		.specular_id = shader_program_default->textures[1].id,
+		.initial_pos = { 1, 0, 0 },
+		.initial_rotation = { 0, 0, 0, 1 }
+	};
+	// clang-format on
+	spawner_summon(ecs_engine, grp2, &spawn2);
 
 	// component_group_t grp2 = { .bit_mask = { .render = 1, .transform = 1 } };
 	// spawner_summon(ecs_engine, grp2, cube_id, shader_program_light->id, 0, 0);

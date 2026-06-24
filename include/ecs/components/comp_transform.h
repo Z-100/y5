@@ -10,9 +10,10 @@ typedef struct component_transform_t {
 } component_transform_t;
 
 typedef struct component_rotation_t {
-	float pitch;
-	float yaw;
-	float roll;
+	float x;
+	float y;
+	float z;
+	float w;
 } component_rotation_t;
 
 #endif

@@ -75,6 +75,6 @@ void		  ecs_engine_tick(ecs_engine_t* engine, float delta_time);
 archetype_t**
 ecs_get_matching_archetypes(ecs_engine_t* engine, component_group_t filter, size_t* out_count);
 
-entity_id_t ecs_entity_create(ecs_engine_t* engine, component_group_t signature);
+entity_id_t ecs_entity_create(ecs_engine_t* engine, component_group_t group);
 
 #endif

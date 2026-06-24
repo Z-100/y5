@@ -8,6 +8,8 @@ typedef struct game_t {
 	GLFWwindow* main_window;
 	camera_t*		player_camera;
 
+	ecs_engine_t* ecs_engine;
+
 	float main_scale;
 	float delta_time;
 	bool  mouse_locked;

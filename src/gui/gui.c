@@ -119,6 +119,12 @@ static void _draw_game_info(const game_t* game) {
 
 static int selected_index = -1;
 
+// TODO: Remove
+static spawn_info_t* spawn_info;
+void remove_but_set_spawn_info(spawn_info_t* info) {
+	spawn_info = info;
+}
+
 static void _draw_game_spawner(const game_t* game) {
 
 	ImVec2 pos = { 0.0f, 500.0f };
@@ -135,7 +141,17 @@ static void _draw_game_spawner(const game_t* game) {
 
 	igCombo_Str_arr(title, &selected_index, elements, 2, 5);
 
+	// TODO: Refactor and idk ??
 	if (igButton("Spawn object", size)) {
+
+		component_group_t grp1 = { .bit_mask = { .render = 1, .transform = 1, .rotation = 1 } };
+		spawn_info_t* spawn1 = spawn_info;
+		spawn1->initial_pos[0] = game->player_camera->position[0];
+		spawn1->initial_pos[1] = game->player_camera->position[1];
+		spawn1->initial_pos[2] = game->player_camera->position[2];
+
+		spawner_summon(game->ecs_engine, grp1, spawn1);
+
 		log_info_f("Spawning: %s", selected_index != -1 ? elements[selected_index] : "Nothing");
 	}
 

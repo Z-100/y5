@@ -52,7 +52,8 @@ ecs_get_matching_archetypes(ecs_engine_t* engine, component_group_t filter, size
 		archetype_t* arch = engine->archetypes[i];
 
 		if ((arch->signature.components_raw & filter.components_raw) == filter.components_raw) {
-			matches[count++] = arch;
+			size_t idx = count++;
+			matches[idx] = arch;
 		}
 	}
 
@@ -60,16 +61,16 @@ ecs_get_matching_archetypes(ecs_engine_t* engine, component_group_t filter, size
 	return matches;
 }
 
-archetype_t* ecs_get_or_create_archetype(ecs_engine_t* engine, component_group_t signature) {
+archetype_t* ecs_get_or_create_archetype(ecs_engine_t* engine, component_group_t group) {
 
 	for (size_t i = 0; i < engine->arch_count; i++) {
-		if (engine->archetypes[i]->signature.components_raw == signature.components_raw) {
+		if (engine->archetypes[i]->signature.components_raw == group.components_raw) {
 			return engine->archetypes[i];
 		}
 	}
 
 	archetype_t* arch  = malloc(sizeof(archetype_t));
-	arch->signature	   = signature;
+	arch->signature	   = group;
 	arch->row_count	   = 0;
 	arch->row_capacity = 4;
 	arch->entities	   = calloc(arch->row_capacity, sizeof(entity_id_t));
@@ -80,7 +81,7 @@ archetype_t* ecs_get_or_create_archetype(ecs_engine_t* engine, component_group_t
 		// Default: Not exists
 		arch->column_map[i] = -1;
 
-		if (signature.components_raw & (1 << i)) {
+		if (group.components_raw & (1 << i)) {
 			active_components++;
 		}
 	}
@@ -90,7 +91,7 @@ archetype_t* ecs_get_or_create_archetype(ecs_engine_t* engine, component_group_t
 	size_t col_idx = 0;
 	for (int i = 0; i < NUM_COMPONENTS; i++) {
 
-		if (signature.components_raw & (1 << i)) {
+		if (group.components_raw & (1 << i)) {
 
 			arch->column_map[i] = col_idx;
 
@@ -118,11 +119,11 @@ archetype_t* ecs_get_or_create_archetype(ecs_engine_t* engine, component_group_t
 
 static entity_id_t id_counter = 0;
 
-entity_id_t ecs_entity_create(ecs_engine_t* engine, component_group_t signature) {
+entity_id_t ecs_entity_create(ecs_engine_t* engine, component_group_t group) {
 
 	entity_id_t entity = id_counter++;
 
-	archetype_t* arch = ecs_get_or_create_archetype(engine, signature);
+	archetype_t* arch = ecs_get_or_create_archetype(engine, group);
 
 	if (arch->row_count >= arch->row_capacity) {
 

@@ -66,7 +66,7 @@ void sys_renderer_update(ecs_engine_t* engine) {
 	light.position[2] = 7.5f * cosf(game_last_frame());
 
 	size_t		  out_count		 = 0;
-	archetype_t** matching_archs = ecs_get_matching_archetypes(engine, filter_render, &out_count);
+	archetype_t** matching_archs = ecs_get_matching_archetypes(engine, filter_renderer, &out_count);
 
 	if (!matching_archs || out_count == 0) {
 		freeAndExit(matching_archs);
@@ -82,7 +82,7 @@ void sys_renderer_update(ecs_engine_t* engine) {
 	mat4 viewTransform = GLM_MAT4_IDENTITY_INIT;
 	camera_get_view_matrix(player_camera, &viewTransform);
 
-	GLuint active_shader_id = 0;
+	GLuint active_shader_id = -1;
 
 	for (size_t i = 0; i < out_count; i++) {
 
@@ -92,21 +92,26 @@ void sys_renderer_update(ecs_engine_t* engine) {
 			continue;
 		}
 
-		int32_t render_col_idx = archetype->column_map[RENDER];
-		if (render_col_idx == -1) {
+		int32_t render_col_idx	  = archetype->column_map[RENDER];
+		int32_t transform_col_idx = archetype->column_map[TRANSFORM];
+		int32_t rotation_col_idx  = archetype->column_map[ROTATION];
+
+		if (render_col_idx == -1 || transform_col_idx == -1 || rotation_col_idx == -1) {
 			continue;
 		}
 
-		component_render_t* render_components = archetype->columns[render_col_idx];
+		component_render_t*	   render_components	= archetype->columns[render_col_idx];
+		component_transform_t* transform_components = archetype->columns[transform_col_idx];
+		component_rotation_t*  rotation_components	= archetype->columns[rotation_col_idx];
 
 		for (size_t row = 0; row < archetype->row_count; row++) {
 
-			component_render_t* component = &render_components[row];
+			component_render_t comp_render = render_components[row];
 
-			bool shader_changed = active_shader_id != component->shader_id;
+			bool shader_changed = active_shader_id != comp_render.shader_id;
 			if (shader_changed) {
 
-				active_shader_id = component->shader_id;
+				active_shader_id = comp_render.shader_id;
 				use_shader(&active_shader_id);
 
 				set_uniform_vec3(&active_shader_id, "u_viewPos", &player_camera->position);
@@ -122,20 +127,28 @@ void sys_renderer_update(ecs_engine_t* engine) {
 				set_uniform_material(&active_shader_id, "u_material", materials_default());
 			}
 
-			mat4  modelMatrix = GLM_MAT4_IDENTITY_INIT;
-			float angle		  = 20.0f * (float) i;
-			glm_rotate(
-				modelMatrix, glm_rad(game_last_frame() * angle), (vec3) { 1.0f, 0.3f, 0.5f }
+			component_transform_t transform = transform_components[row];
+			component_rotation_t  rotation	= rotation_components[row];
+
+			mat4 model_matrix = GLM_MAT4_IDENTITY_INIT;
+
+			glm_translate(model_matrix, (vec3) { transform.x, transform.y, transform.z });
+
+			// Rotate anyway, default is { 0, 0, 0, 1 }
+			glm_quat_rotate(
+				model_matrix, (vec4) { rotation.x, rotation.y, rotation.z, rotation.w },
+				model_matrix
 			);
-			set_uniform_mat4(&active_shader_id, "u_modelTransform", &modelMatrix);
+
+			set_uniform_mat4(&active_shader_id, "u_modelTransform", &model_matrix);
 
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, component->diffuse_id);
+			glBindTexture(GL_TEXTURE_2D, comp_render.diffuse_id);
 
 			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, component->specular_id);
+			glBindTexture(GL_TEXTURE_2D, comp_render.specular_id);
 
-			renderer_draw(component->model_id);
+			renderer_draw(comp_render.model_id);
 		}
 	}
 

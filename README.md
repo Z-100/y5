@@ -24,23 +24,15 @@ why 5?
 
 ## y5 Showcase
 
-<p align="center">
-  <img src="doc/y5-demo-202605.png" alt="OpenGL" width="600"/>
-  <br/>
-  <em>✨ y5 - 202605 ✨</em>
-</p>
+**Latest Development Screenshot**
 
 <p align="center">
-  <img src="doc/y5-demo-202511.png" alt="OpenGL" width="600"/>
+  <img src="doc/y5-demo-202624.png" alt="OpenGL" width="600"/>
   <br/>
-  <em>✨ y5 - 202511 ✨</em>
+  <em>✨ y5 - 202624 ✨</em>
 </p>
 
-<p align="center">
-  <img src="doc/y5-demo-202510.png" alt="OpenGL" width="600"/>
-  <br/>
-  <em>✨ y5 - 202510 ✨</em>
-</p>
+**First Development Screenshot**
 
 <p align="center">
   <img src="doc/y5-demo-202509.png" alt="OpenGL" width="600"/>
