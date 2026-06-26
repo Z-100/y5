@@ -1,5 +1,5 @@
 #include "utils/file_reader.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 char* read_lines_dir_name(char* directory, char* fileName) {
 	char* file_path = concat_dir_file(directory, fileName);

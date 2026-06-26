@@ -1,5 +1,5 @@
 #include "utils/string_utils.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 char* concat_dir_file(char* dir, char* file) {
 

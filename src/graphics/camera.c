@@ -1,5 +1,5 @@
 #include "graphics/camera.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 bool  camera_is_first_focus = true;
 float camera_last_x			= .0f;
@@ -7,14 +7,13 @@ float camera_last_y			= .0f;
 
 static void _update_camera_vectors(camera_t* camera);
 
-int camera_create_player_camera(game_t* game) {
+camera_t* camera_create_player_camera() {
 
 	camera_t* player_camera = malloc(sizeof(camera_t));
-	game->player_camera	  = player_camera;
 
 	if (!player_camera) {
 		log_error("Failed allocating memory for Camera");
-		return -1;
+		return nullptr;
 	}
 
 	glm_vec3_zero(player_camera->position);
@@ -31,7 +30,7 @@ int camera_create_player_camera(game_t* game) {
 
 	_update_camera_vectors(player_camera);
 
-	return 0;
+	return player_camera;
 }
 
 void camera_get_view_matrix(camera_t* camera, mat4* dest_view_matrix) {

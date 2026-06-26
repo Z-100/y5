@@ -1,45 +1,25 @@
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
-const char* APP_NAME = "y5";
-void		process_inputs(game_t* game);
+static void process_inputs(game_t* game);
 
 int main() {
 
-	log_info_f("Starting %s application", APP_NAME);
+	log_info("Starting y5 :PPPP");
 
-	bool	game_initialized = game_init();
-	game_t* game			 = game_get_game();
-
-	if (!game_initialized || !game) {
+	game_t* game = game_init();
+	if (!game) {
+		log_error("Failed initializing game!");
 		return -1;
 	}
 
-	bool window_created = window_manager_create_main(game);
+	glfwSetKeyCallback(game->main_window, key_callback);
 
-	if (!window_created) {
-		return -1;
+	bool sound_loaded = load_sound(game->audio_manager, "wololo", "wololo.mp3");
+	if (!sound_loaded) {
+		log_error("Failed loading sound !");
+	} else {
+		play_sound(game->audio_manager, "wololo");
 	}
-
-	bool gui_created = gui_init_imgui(game);
-
-	if (!gui_created) {
-		return -1;
-	}
-
-	ma_engine* sound_engine = init_audio_manager();
-	if (!sound_engine) {
-		return -1;
-	}
-
-	ma_sound* wololo = load_sound(sound_engine, "wololo.mp3");
-	play_sound(wololo);
-
-	ecs_engine_t* ecs_engine = ecs_engine_new();
-	if (!ecs_engine) {
-		return -1;
-	}
-
-	game->ecs_engine = ecs_engine;
 
 	shader_program_t* shader_program_default = shaders_collection_default();
 	shader_program_t* shader_program_light	 = shaders_collection_light();
@@ -68,8 +48,7 @@ int main() {
 		.initial_rotation = { 0, 0, 0, 1 }
 	};
 	// clang-format on
-	remove_but_set_spawn_info(&spawn1);
-	spawner_summon(ecs_engine, grp1, &spawn1);
+	spawner_summon(game->ecs_engine, grp1, &spawn1);
 
 	component_group_t grp2 = { .bit_mask = { .render = 1, .transform = 1, .rotation = 1 } };
 	// clang-format off
@@ -82,51 +61,38 @@ int main() {
 		.initial_rotation = { 0, 0, 0, 1 }
 	};
 	// clang-format on
-	spawner_summon(ecs_engine, grp2, &spawn2);
+	spawner_summon(game->ecs_engine, grp2, &spawn2);
 
 	// component_group_t grp2 = { .bit_mask = { .render = 1, .transform = 1 } };
 	// spawner_summon(ecs_engine, grp2, cube_id, shader_program_light->id, 0, 0);
 
-	while (game_is_running()) {
+	while (game_is_running(game)) {
 
-		game_update();
+		game_update(game);
 		process_inputs(game);
 
 		gui_update_imgui(game);
 
-		ecs_engine_tick(ecs_engine, game->delta_time);
+		ecs_engine_tick(game->ecs_engine, game->delta_time);
 
 		gui_render_imgui();
 
 		renderer_update(game);
 	}
 
-	gui_terminate_imgui();
+	gui_terminate_imgui(game->gui);
 	renderer_destroy();
 	window_manager_destroy_main(game);
 
 	return 0;
 }
 
-void process_inputs(game_t* game) {
+static void process_inputs(game_t* game) {
 
 	GLFWwindow* main_window = game->main_window;
 
-	// ---------------
-	// Close da window
-	// ---------------
-
-	if (glfwGetKey(main_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-
-		game->mouse_locked = !game->mouse_locked;
-
-		// clang-format off
-		int cursor_mode = game->mouse_locked ?
-				GLFW_CURSOR_DISABLED : // Camera mode
-				GLFW_CURSOR_NORMAL;    // UI mode
-		// clang-format on
-
-		glfwSetInputMode(main_window, GLFW_CURSOR, cursor_mode);
+	if (!game->mouse_locked) {
+		return;
 	}
 
 	// ----------------

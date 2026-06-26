@@ -1,5 +1,5 @@
 #include "graphics/mesh_generator.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 struct FloatArray* generate_vertices(unsigned int width, unsigned int height) {
 

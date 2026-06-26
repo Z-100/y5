@@ -69,7 +69,7 @@ typedef struct ecs_engine_t {
 // = ECS Functions =
 // =================
 
-ecs_engine_t* ecs_engine_new();
+ecs_engine_t* ecs_engine_init();
 void		  ecs_engine_tick(ecs_engine_t* engine, float delta_time);
 
 archetype_t**

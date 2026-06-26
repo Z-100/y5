@@ -5,24 +5,26 @@
 
 typedef struct game_t {
 
-	GLFWwindow* main_window;
-	camera_t*		player_camera;
+	// Engine globals
+	GLFWwindow*		 main_window;
+	camera_t*		 player_camera;
+	ecs_engine_t*	 ecs_engine;
+	audio_manager_t* audio_manager;
+	gui_t*			 gui;
 
-	ecs_engine_t* ecs_engine;
-
-	float main_scale;
+	// idk maybe?
 	float delta_time;
-	bool  mouse_locked;
+	float last_frame;
 
-	bool running;
+	// General globals
+	float main_scale;
+	bool  mouse_locked;
+	bool  running;
+
 } game_t;
 
-bool  game_init();
-game_t* game_get_game();
-
-void game_update();
-
-int	  game_is_running();
-float game_last_frame();
+game_t* game_init();
+void	game_update(game_t* game);
+int		game_is_running(const game_t* game);
 
 #endif

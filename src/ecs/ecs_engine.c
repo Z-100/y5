@@ -1,5 +1,5 @@
 #include "ecs/ecs_engine.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 static size_t get_component_size(enum component_type type);
 
@@ -8,7 +8,7 @@ static size_t get_component_size(enum component_type type);
 // =========================
 
 // TODO: Malloc checks
-ecs_engine_t* ecs_engine_new() {
+ecs_engine_t* ecs_engine_init() {
 
 	ecs_engine_t* engine = malloc(sizeof(ecs_engine_t));
 
@@ -52,7 +52,7 @@ ecs_get_matching_archetypes(ecs_engine_t* engine, component_group_t filter, size
 		archetype_t* arch = engine->archetypes[i];
 
 		if ((arch->signature.components_raw & filter.components_raw) == filter.components_raw) {
-			size_t idx = count++;
+			size_t idx	 = count++;
 			matches[idx] = arch;
 		}
 	}

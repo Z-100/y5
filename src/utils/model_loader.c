@@ -1,5 +1,5 @@
 #include "utils/model_loader.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 model_object_t* load_model(char* directory, char* filename) {
 

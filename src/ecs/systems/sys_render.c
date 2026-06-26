@@ -1,4 +1,4 @@
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 #include "ecs/systems/sys_render.h"
 
 // TODO: Remove
@@ -62,8 +62,8 @@ void sys_renderer_update(ecs_engine_t* engine) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// TODO: Remove
-	light.position[0] = 7.5f * sinf(game_last_frame());
-	light.position[2] = 7.5f * cosf(game_last_frame());
+	// light.position[0] = 7.5f * sinf(game_last_frame());
+	// light.position[2] = 7.5f * cosf(game_last_frame());
 
 	size_t		  out_count		 = 0;
 	archetype_t** matching_archs = ecs_get_matching_archetypes(engine, filter_renderer, &out_count);

@@ -8,6 +8,7 @@
 
 #include "components/materials.h"
 
+#include "core/audio.h"
 #include "core/callbacks.h"
 #include "core/game.h"
 #include "core/hash_map.h"
@@ -27,7 +28,6 @@
 
 #include "gui/gui.h"
 
-#include "utils/audio_manager.h"
 #include "utils/file_reader.h"
 #include "utils/logger_utils.h"
 #include "utils/math_utils.h"

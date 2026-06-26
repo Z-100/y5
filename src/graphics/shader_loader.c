@@ -1,5 +1,5 @@
 #include "graphics/shader_loader.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 const char* SHADERS_DIRECTORY = "res/shaders";
 

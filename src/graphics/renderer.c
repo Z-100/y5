@@ -1,5 +1,5 @@
 #include "graphics/renderer.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 static void _initialize_texture(char* texture_path, unsigned int* texture);
 static void _initialize_object(gl_object_t* gl_object);

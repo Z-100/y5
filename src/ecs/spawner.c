@@ -1,5 +1,5 @@
 #include "ecs/spawner.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 void spawner_summon(ecs_engine_t* ecs_engine, component_group_t group, spawn_info_t* spawn_info) {
 

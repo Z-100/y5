@@ -1,20 +1,24 @@
 #include "core/hash_map.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
-static int	find_pos(map_root_t* root, int key);
-static int	hash(int max_size, int key);
+static int	find_pos(map_root_t* root, void* key);
+static int	hash(hash_function fn_hash, int max_size, void* key);
 static void check_and_rehash(map_root_t* root);
 
-map_root_t* map_init(int size, float load_factor) {
+map_root_t*
+map_init(int size, float load_factor, hash_function fn_hash, equals_function fn_equals) {
 
 	map_root_t* root = malloc(sizeof(map_root_t));
 
 	root->max_size	  = size;
 	root->load_factor = load_factor;
+	root->fn_hash	  = fn_hash;
+	root->fn_equals	  = fn_equals;
 
-	root->keys	  = malloc(sizeof(void*) * size);
-	root->values  = malloc(sizeof(void*) * size);
-	root->deleted = malloc(sizeof(bool) * size);
+	root->keys	  = calloc(size, sizeof(void*));
+	root->values  = calloc(size, sizeof(void*));
+	root->deleted = calloc(size, sizeof(bool));
+	root->size	  = 0;
 
 	if (!root || !root->keys || !root->values) {
 		log_error("Failed allocating hash map");
@@ -24,7 +28,56 @@ map_root_t* map_init(int size, float load_factor) {
 	return root;
 }
 
-void map_put(map_root_t* root, int key, void* value) {
+map_root_t* map_init_default(hash_function fn_hash, equals_function fn_equals) {
+	return map_init(16, 0.75, fn_hash, fn_equals);
+}
+
+// =====================
+// HashMap<int, [...]>
+// =====================
+
+uint32_t hash_int(const void* key) {
+
+	uint32_t x = *(const uint32_t*) key;
+
+	x = ((x >> 16) ^ x) * 0x42069aa;
+	x = ((x >> 16) ^ x) * 0x42069aa;
+	x = (x >> 16) ^ x;
+
+	return x;
+}
+
+bool equals_int(const void* key1, const void* key2) {
+	return *(const uint32_t*) key1 == *(const uint32_t*) key2;
+}
+
+map_root_t* map_init_int() {
+	return map_init_default(hash_int, equals_int);
+}
+
+// =====================
+// HashMap<char*, [...]>
+// =====================
+
+uint32_t hash_string(const void* key) {
+	const char* str	 = key;
+	uint32_t	hash = 5381;
+	int			c;
+	while ((c = *str++)) {
+		hash = ((hash << 5) + hash) + c;
+	}
+	return hash;
+}
+
+bool equals_string(const void* key1, const void* key2) {
+	return strcmp(key1, key2) == 0;
+}
+
+map_root_t* map_init_string() {
+	return map_init_default(hash_string, equals_string);
+}
+
+void map_put(map_root_t* root, void* key, void* value) {
 
 	if (!root) {
 		log_error("Map root pointer cannot be null");
@@ -45,7 +98,7 @@ void map_put(map_root_t* root, int key, void* value) {
 	root->deleted[pos] = false;
 }
 
-void* map_remove(map_root_t* root, int key) {
+void* map_remove(map_root_t* root, void* key) {
 
 	if (!root) {
 		log_error("Map root pointer cannot be null");
@@ -54,7 +107,7 @@ void* map_remove(map_root_t* root, int key) {
 
 	int pos = find_pos(root, key);
 
-	int	  old_key	= root->keys[pos];
+	void* old_key	= root->keys[pos];
 	void* old_value = root->values[pos];
 
 	if (!old_key) {
@@ -62,7 +115,7 @@ void* map_remove(map_root_t* root, int key) {
 		return nullptr;
 	}
 
-	root->keys[pos]	   = 0;
+	root->keys[pos]	   = nullptr;
 	root->values[pos]  = nullptr;
 	root->deleted[pos] = true;
 	root->size--;
@@ -70,7 +123,7 @@ void* map_remove(map_root_t* root, int key) {
 	return old_value;
 }
 
-void* map_get(map_root_t* root, int key) {
+void* map_get(map_root_t* root, void* key) {
 
 	if (!root) {
 		log_error("Map root pointer cannot be null");
@@ -83,10 +136,10 @@ void* map_get(map_root_t* root, int key) {
 	return value ? value : nullptr;
 }
 
-static int find_pos(map_root_t* root, int key) {
+static int find_pos(map_root_t* root, void* key) {
 
 	int max_size = root->max_size;
-	int pos		 = hash(max_size, key);
+	int pos		 = hash(root->fn_hash, max_size, key);
 
 	int firstDeleted = -1;
 
@@ -102,7 +155,7 @@ static int find_pos(map_root_t* root, int key) {
 				firstDeleted = pos;
 			}
 
-		} else if (root->keys[pos] == key) {
+		} else if (root->fn_equals(root->keys[pos], key)) {
 			return pos;
 		}
 
@@ -112,8 +165,8 @@ static int find_pos(map_root_t* root, int key) {
 	return firstDeleted != -1 ? firstDeleted : pos;
 }
 
-static int hash(int max_size, int key) {
-	return (key & 0x7fffffff) % max_size;
+static int hash(hash_function fn_hash, int max_size, void* key) {
+	return (fn_hash(key) & 0x7fffffff) % max_size;
 }
 
 static void check_and_rehash(map_root_t* root) {
@@ -127,18 +180,18 @@ static void check_and_rehash(map_root_t* root) {
 		return;
 	}
 
-	int new_size = size * 2;
+	int new_size = max_size * 2;
 
-	int*   old_keys	   = root->keys;
+	void** old_keys	   = root->keys;
 	void** old_values  = root->values;
 	bool*  old_deleted = root->deleted;
 
 	root->max_size = new_size;
-	root->keys	   = malloc(sizeof(int) * new_size);
-	root->values   = malloc(sizeof(void*) * new_size);
-	root->deleted  = malloc(sizeof(bool) * new_size);
+	root->keys	   = calloc(new_size, sizeof(void*));
+	root->values   = calloc(new_size, sizeof(void*));
+	root->deleted  = calloc(new_size, sizeof(bool));
 
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < max_size; i++) {
 		if (old_keys[i] && !old_deleted[i]) {
 			map_put(root, old_keys[i], old_values[i]);
 		}

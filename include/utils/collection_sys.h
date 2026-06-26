@@ -3,6 +3,10 @@
 
 #define GLFW_INCLUDE_NONE
 
+// We are forward declaring some "system" stuff here rather than in the other one
+typedef struct ImGuiContext ImGuiContext;
+typedef struct ImGuiIO		ImGuiIO;
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 

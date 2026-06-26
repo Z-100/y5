@@ -7,56 +7,59 @@
 #include "bridges/imgui_backends_bridge.h"
 #include "gui/gui.h"
 
-#include "utils/headers_collection.h"
-
-static ImGuiContext* imgui_context;
-static ImGuiIO*		 imgui_io;
+#include "utils/collection_hdr.h"
 
 static void _draw_prod_info();
 static void _draw_game_info(const game_t* game);
 static void _draw_game_spawner(const game_t* game);
 
-float gui_main_scale() {
+float gui_provide_main_scale() {
 	GLFWmonitor* glfw_monitor = glfwGetPrimaryMonitor();
 	return cimGui_ImplGlfw_GetContentScaleForMonitor(glfw_monitor);
 }
 
-bool gui_init_imgui(const game_t* game) {
+gui_t* gui_init_imgui(gui_info_t gui_info) {
 
 	log_info("Start initializing imgui");
 
+	gui_t* gui = malloc(sizeof(gui_t));
+	if (!gui) {
+		log_error("Failed malloc for gui_t");
+		return nullptr;
+	}
+
 	igCreateContext(nullptr);
 
-	imgui_io = igGetIO_Nil();
-	imgui_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	gui->imgui_io = igGetIO_Nil();
+	gui->imgui_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-	bool initialized_for_glfw = cimgui_ImplGlfw_InitForOpenGL(game->main_window, true);
+	bool initialized_for_glfw = cimgui_ImplGlfw_InitForOpenGL(gui_info.main_window, true);
 
 	if (!initialized_for_glfw) {
 		log_error("Failed initializing imgui for GLFW");
-		return false;
+		return nullptr;
 	}
 
 	bool initialized_for_opengl = cimgui_ImplOpenGL3_Init("#version 130");
 
 	if (!initialized_for_opengl) {
 		log_error("Failed initializing imgui for OpenGL");
-		return false;
+		return nullptr;
 	}
 
 	igStyleColorsDark(nullptr);
 
-	float main_scale = game->main_scale;
+	float main_scale = gui_provide_main_scale();
 
 	ImGuiStyle* style = igGetStyle();
 	ImGuiStyle_ScaleAllSizes(style, main_scale);
 	style->FontScaleDpi = main_scale;
 
 	log_info("Finish initializing imgui");
-	return true;
+	return gui;
 }
 
-void gui_terminate_imgui() {
+void gui_terminate_imgui(gui_t* gui) {
 
 	log_info("Start terminating imgui");
 
@@ -66,6 +69,14 @@ void gui_terminate_imgui() {
 	igDestroyContext(nullptr);
 
 	log_info("Finish terminating imgui");
+}
+
+void gui_render_imgui() {
+
+	igRender();
+
+	ImDrawData* draw_data = igGetDrawData();
+	cimgui_ImplOpenGL3_RenderDrawData(draw_data);
 }
 
 void gui_update_imgui(const game_t* game) {
@@ -82,14 +93,6 @@ void gui_update_imgui(const game_t* game) {
 	igEnd();
 }
 
-void gui_render_imgui() {
-
-	igRender();
-
-	ImDrawData* draw_data = igGetDrawData();
-	cimgui_ImplOpenGL3_RenderDrawData(draw_data);
-}
-
 static void _draw_prod_info() {
 
 	ImVec2 pos = { 1280.0f, 0.0f };
@@ -101,6 +104,8 @@ static void _draw_prod_info() {
 }
 
 static void _draw_game_info(const game_t* game) {
+
+	ImGuiIO* imgui_io = game->gui->imgui_io;
 
 	ImVec2 pos = { 0.0f, 0.0f };
 	igSetNextWindowPos(pos, ImGuiCond_Always, (ImVec2) { 0, 0 });
@@ -118,12 +123,6 @@ static void _draw_game_info(const game_t* game) {
 }
 
 static int selected_index = -1;
-
-// TODO: Remove
-static spawn_info_t* spawn_info;
-void remove_but_set_spawn_info(spawn_info_t* info) {
-	spawn_info = info;
-}
 
 static void _draw_game_spawner(const game_t* game) {
 
@@ -144,13 +143,13 @@ static void _draw_game_spawner(const game_t* game) {
 	// TODO: Refactor and idk ??
 	if (igButton("Spawn object", size)) {
 
-		component_group_t grp1 = { .bit_mask = { .render = 1, .transform = 1, .rotation = 1 } };
-		spawn_info_t* spawn1 = spawn_info;
-		spawn1->initial_pos[0] = game->player_camera->position[0];
-		spawn1->initial_pos[1] = game->player_camera->position[1];
-		spawn1->initial_pos[2] = game->player_camera->position[2];
-
-		spawner_summon(game->ecs_engine, grp1, spawn1);
+		// component_group_t grp1 = { .bit_mask = { .render = 1, .transform = 1, .rotation = 1 } };
+		// spawn_info_t* spawn1 = spawn_info;
+		// spawn1->initial_pos[0] = game->player_camera->position[0];
+		// spawn1->initial_pos[1] = game->player_camera->position[1];
+		// spawn1->initial_pos[2] = game->player_camera->position[2];
+		//
+		// spawner_summon(game->ecs_engine, grp1, spawn1);
 
 		log_info_f("Spawning: %s", selected_index != -1 ? elements[selected_index] : "Nothing");
 	}

@@ -1,38 +1,50 @@
 #include "core/game.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
-float last_frame = 0;
+game_t* game_init() {
 
-static game_t* game = nullptr;
-
-bool game_init() {
-
-	game = malloc(sizeof(game_t));
+	game_t* game = malloc(sizeof(game_t));
 
 	if (!game) {
 		log_error("Failed allocating for game");
-		return false;
+		return nullptr;
 	}
 
-	camera_create_player_camera(game);
+	// ----------------------------
+	// Create required game objects
+	// ----------------------------
 
-	return true;
-}
+	game->player_camera = camera_create_player_camera();
 
-game_t* game_get_game() {
+	window_manger_info_t wm_info = { .main_scale = game->main_scale, .title = "y5 Engine" };
+	game->main_window			 = window_manager_create_main(wm_info);
+	glfwSetWindowUserPointer(game->main_window, game); // Now available from window too :)
+
+	gui_info_t gui_info = { .main_window = game->main_window, .main_scale = game->main_scale };
+	game->gui			= gui_init_imgui(gui_info);
+
+	game->audio_manager = init_audio_manager();
+
+	game->ecs_engine = ecs_engine_init();
+
+	// ---------------
+	// Default options
+	// ---------------
+
+	game->main_scale   = gui_provide_main_scale();
+	game->mouse_locked = true;
+	game->running	   = true;
+
 	return game;
 }
 
-void game_update() {
+void game_update(game_t* game) {
+
 	float current_time = (float) glfwGetTime();
-	game->delta_time   = current_time - last_frame;
-	last_frame		   = current_time;
+	game->delta_time   = current_time - game->last_frame;
+	game->last_frame   = current_time;
 }
 
-int game_is_running() {
+int game_is_running(const game_t* game) {
 	return !glfwWindowShouldClose(game->main_window);
-}
-
-float game_last_frame() {
-	return last_frame;
 }

@@ -1,5 +1,5 @@
 #include "graphics/shaders_collection.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 static void _init_shader(shader_t* shader, const char* name, const GLuint type);
 static void _init_texture(shader_texture_t* tex, const char* tex_name, const char* uni_name);
@@ -25,12 +25,16 @@ shader_program_t* shaders_collection_default() {
 
 	shader_program_default->id = -1;
 
-	shader_program_default->shaders = calloc(sizeof(shader_t), 2);
+	shader_program_default->shaders		  = calloc(sizeof(shader_t), 2);
 	shader_program_default->shaders_count = 2;
-	_init_shader(&shader_program_default->shaders[0], "vertex_shader_textures.glsl", GL_VERTEX_SHADER);
-	_init_shader(&shader_program_default->shaders[1], "fragment_shader_textures.glsl", GL_FRAGMENT_SHADER);
+	_init_shader(
+		&shader_program_default->shaders[0], "vertex_shader_textures.glsl", GL_VERTEX_SHADER
+	);
+	_init_shader(
+		&shader_program_default->shaders[1], "fragment_shader_textures.glsl", GL_FRAGMENT_SHADER
+	);
 
-	shader_program_default->textures = calloc(sizeof(shader_texture_t), 2);
+	shader_program_default->textures	   = calloc(sizeof(shader_texture_t), 2);
 	shader_program_default->textures_count = 2;
 	_init_texture(&shader_program_default->textures[0], "res/textures/elmo.png", "u_elmoTexture");
 	_init_texture(&shader_program_default->textures[1], "res/textures/obama.png", "u_obamaTexture");
@@ -57,13 +61,17 @@ shader_program_t* shaders_collection_light() {
 		return nullptr;
 	}
 
-	shader_program_light->id = -1;
+	shader_program_light->id			 = -1;
 	shader_program_light->textures_count = 0;
 
-	shader_program_light->shaders = calloc(sizeof(shader_t), 2);
+	shader_program_light->shaders		= calloc(sizeof(shader_t), 2);
 	shader_program_light->shaders_count = 2;
-	_init_shader(&shader_program_light->shaders[0], "vertex_shader_light_source.glsl", GL_VERTEX_SHADER);
-	_init_shader(&shader_program_light->shaders[1], "fragment_shader_light_source.glsl", GL_FRAGMENT_SHADER);
+	_init_shader(
+		&shader_program_light->shaders[0], "vertex_shader_light_source.glsl", GL_VERTEX_SHADER
+	);
+	_init_shader(
+		&shader_program_light->shaders[1], "fragment_shader_light_source.glsl", GL_FRAGMENT_SHADER
+	);
 
 	return shader_program_light;
 }
@@ -73,13 +81,13 @@ shader_program_t* shaders_collection_light() {
 // ====================
 
 static void _init_shader(shader_t* shader, const char* name, const GLuint type) {
-	shader->id = -1;
+	shader->id	 = -1;
 	shader->name = name;
 	shader->type = type;
 }
 
 static void _init_texture(shader_texture_t* tex, const char* tex_name, const char* uni_name) {
-	tex->id = -1;
+	tex->id			  = -1;
 	tex->texture_name = tex_name;
 	tex->uniform_name = uni_name;
 }

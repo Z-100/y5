@@ -1,5 +1,5 @@
 #include "core/types.h"
-#include "utils/headers_collection.h"
+#include "utils/collection_hdr.h"
 
 void fill_array_if_exists(const void* data, unsigned int dataLength, struct Array* dataPointer);
 
