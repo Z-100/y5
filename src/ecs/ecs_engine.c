@@ -25,17 +25,22 @@ ecs_engine_t* ecs_engine_init() {
 	return engine;
 }
 
-void ecs_engine_tick(ecs_engine_t* engine, float delta_time) {
-	engine->delta_time = delta_time;
+void ecs_engine_tick(const game_t* game) {
+
+	ecs_engine_t* engine = game->ecs_engine;
+	engine->delta_time	 = game->delta_time;
+
+	camera_t*	player_camera = game->player_camera;
+	GLFWwindow* main_window	  = game->main_window;
 
 	// 1. Process player inputs
-	// TODO: Process inputs here
+	sys_inputs_process(engine, player_camera, game->mouse_locked, main_window);
 
 	// 2. Do physics stuff
 	// TODO: Process physics here
 
 	// 3. Render stuff
-	sys_renderer_update(engine);
+	sys_renderer_update(engine, player_camera);
 
 	// X. Delete entities
 	// TODO: Delete entities here

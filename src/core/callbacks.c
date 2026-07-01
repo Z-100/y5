@@ -54,6 +54,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
 		game_t* game = glfwGetWindowUserPointer(window);
-		play_sound(game->audio_manager, "wololo");
+		audio_sound_play(game->audio_manager, "wololo");
 	}
 }

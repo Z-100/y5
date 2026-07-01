@@ -3,7 +3,6 @@
 
 #include "utils/collection_sys.h"
 
-void sys_renderer_update(ecs_engine_t* engine);
-void remove_but_load_camera(camera_t* camera);
+void sys_renderer_update(ecs_engine_t* engine, const camera_t* player_camera);
 
 #endif

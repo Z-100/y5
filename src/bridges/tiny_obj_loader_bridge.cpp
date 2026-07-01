@@ -343,6 +343,9 @@ void memcpy_texture_option_t(
 	ModelMetadata*			   metadata
 ) {
 
+	c_texture_option =
+		static_cast<tinyobj_texture_option_t*>(malloc(sizeof(tinyobj_texture_option_t)));
+
 	texture_type_t c_texture_type;
 	switch (texture_option.type) {
 		case tinyobj::TEXTURE_TYPE_NONE:

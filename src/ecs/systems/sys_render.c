@@ -11,52 +11,13 @@ Light light = { .position = { 0.0f, 5.0f, 0.0f },
 				.diffuse  = { 0.5f, 0.5f, 0.5f },
 				.specular = { 1.0f, 1.0f, 1.0f } };
 
-// TODO: Remove
-// static void _start() {
-//
-// glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-// glActiveTexture(GL_TEXTURE0);
-// glBindTexture(GL_TEXTURE_2D, textures[0]);
-//
-// glActiveTexture(GL_TEXTURE1);
-// glBindTexture(GL_TEXTURE_2D, textures[1]);
-// }
-
-// TODO: Remove
-// static void _render_light_cube(GLuint shader_id) {
-//
-// 	use_shader(&shader_light_source);
-// 	set_uniform_vec3(&shader_light_source, "u_lightSourceColor", &light.ambient);
-//
-// 	set_uniform_mat4(&shader_light_source, "u_projectionTransform", &projectionTransform);
-// 	set_uniform_mat4(&shader_light_source, "u_viewTransform", &viewTransform);
-//
-// 	mat4 modelTransform = GLM_MAT4_IDENTITY_INIT;
-// 	glm_translate(modelTransform, light.position);
-//
-// 	set_uniform_mat4(&shader_light_source, "u_modelTransform", &modelTransform);
-//
-// 	glBindVertexArray(render_components[1]->vao);
-// 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, render_components[1]->ebo);
-// 	glDrawElements(GL_TRIANGLES, models[1]->index_count, GL_UNSIGNED_INT, nullptr);
-// }
-
 #define freeAndExit(archetypes) \
 	do { \
 		free(archetypes); \
 		return; \
 	} while (0)
 
-// TODO: Remove
-static camera_t* player_camera;
-
-void remove_but_load_camera(camera_t* camera) {
-	player_camera = camera;
-}
-
-void sys_renderer_update(ecs_engine_t* engine) {
+void sys_renderer_update(ecs_engine_t* engine, const camera_t* player_camera) {
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -142,11 +103,15 @@ void sys_renderer_update(ecs_engine_t* engine) {
 
 			set_uniform_mat4(&active_shader_id, "u_modelTransform", &model_matrix);
 
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, comp_render.diffuse_id);
+			if (comp_render.diffuse_id) {
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, comp_render.diffuse_id);
+			}
 
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, comp_render.specular_id);
+			if (comp_render.specular_id) {
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, comp_render.specular_id);
+			}
 
 			renderer_draw(comp_render.model_id);
 		}

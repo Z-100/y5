@@ -50,7 +50,15 @@ bool destroy_audio_manager(audio_manager_t* audio_manager) {
 	return true;
 }
 
-bool load_sound(audio_manager_t* audio_manager, char* sound_name, char* sound_file_name) {
+void audio_sound_load_all(audio_manager_t* audio_manager) {
+
+	bool sound_loaded = audio_sound_load(audio_manager, "wololo", "wololo.mp3");
+	if (!sound_loaded) {
+		log_error("Failed loading sound !");
+	}
+}
+
+bool audio_sound_load(audio_manager_t* audio_manager, char* sound_name, char* sound_file_name) {
 
 	ma_sound* sound = malloc(sizeof(ma_sound));
 	if (!sound) {
@@ -75,7 +83,7 @@ bool load_sound(audio_manager_t* audio_manager, char* sound_name, char* sound_fi
 	return true;
 }
 
-void play_sound(audio_manager_t* audio_manager, char* sound_name) {
+void audio_sound_play(audio_manager_t* audio_manager, char* sound_name) {
 
 	ma_sound* sound = map_get(audio_manager->sounds_map, sound_name);
 	if (!sound) {

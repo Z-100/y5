@@ -32,7 +32,7 @@ typedef struct camera_t {
 camera_t* camera_create_player_camera();
 
 void camera_get_view_matrix(camera_t* camera, mat4* dest_view_matrix);
-void camera_process_keyboard(game_t* game, enum Camera_Movement movement);
+void camera_process_keyboard(camera_t* camera, float delta_time, enum Camera_Movement movement);
 void camera_process_mouse_movement(float xPos, float yPos, camera_t* camera);
 void camera_process_mouse_scroll(float yOffset, camera_t* camera);
 

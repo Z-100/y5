@@ -71,14 +71,6 @@ void gui_terminate_imgui(gui_t* gui) {
 	log_info("Finish terminating imgui");
 }
 
-void gui_render_imgui() {
-
-	igRender();
-
-	ImDrawData* draw_data = igGetDrawData();
-	cimgui_ImplOpenGL3_RenderDrawData(draw_data);
-}
-
 void gui_update_imgui(const game_t* game) {
 
 	cimgui_ImplOpenGL3_NewFrame();
@@ -91,6 +83,14 @@ void gui_update_imgui(const game_t* game) {
 	_draw_game_spawner(game);
 
 	igEnd();
+}
+
+void gui_render_imgui() {
+
+	igRender();
+
+	ImDrawData* draw_data = igGetDrawData();
+	cimgui_ImplOpenGL3_RenderDrawData(draw_data);
 }
 
 static void _draw_prod_info() {

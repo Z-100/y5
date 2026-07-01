@@ -38,6 +38,7 @@ GLFWwindow* window_manager_create_main(window_manger_info_t wm_info) {
 	glfwSetFramebufferSizeCallback(main_window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(main_window, mouse_callback);
 	glfwSetScrollCallback(main_window, scroll_callback);
+	glfwSetKeyCallback(main_window, key_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
 		log_error("Error loading GLAD");

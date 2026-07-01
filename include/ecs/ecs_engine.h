@@ -70,7 +70,7 @@ typedef struct ecs_engine_t {
 // =================
 
 ecs_engine_t* ecs_engine_init();
-void		  ecs_engine_tick(ecs_engine_t* engine, float delta_time);
+void		  ecs_engine_tick(const game_t* game);
 
 archetype_t**
 ecs_get_matching_archetypes(ecs_engine_t* engine, component_group_t filter, size_t* out_count);

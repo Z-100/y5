@@ -41,11 +41,9 @@ void camera_get_view_matrix(camera_t* camera, mat4* dest_view_matrix) {
 	glm_lookat(camera->position, center, camera->up, *dest_view_matrix);
 }
 
-void camera_process_keyboard(game_t* game, enum Camera_Movement movement) {
+void camera_process_keyboard(camera_t* camera, float delta_time, enum Camera_Movement movement) {
 
-	camera_t* camera = game->player_camera;
-
-	float velocity		= camera->move_speed * game->delta_time;
+	float velocity		= camera->move_speed * delta_time;
 	vec3  tempDirection = GLM_VEC3_ZERO_INIT;
 
 	switch (movement) {

@@ -1,7 +1,7 @@
 #include "utils/model_loader.h"
 #include "utils/collection_hdr.h"
 
-model_object_t* load_model(char* directory, char* filename) {
+model_object_t* model_loader_load(char* directory, char* filename) {
 
 	log_info_f("Loading model '%s'", filename);
 
@@ -141,3 +141,5 @@ model_object_t* load_model(char* directory, char* filename) {
 
 	return model;
 }
+
+void model_loader_load_all() {}

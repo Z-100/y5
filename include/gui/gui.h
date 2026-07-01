@@ -27,7 +27,7 @@ float gui_provide_main_scale();
 gui_t* gui_init_imgui(gui_info_t gui_info);
 void   gui_terminate_imgui(gui_t* gui);
 
-void gui_render_imgui();
 void gui_update_imgui(const game_t* game);
+void gui_render_imgui();
 
 #endif
